@@ -686,7 +686,7 @@ export default function App() {
     <div className="app">
       <div className="topbar">
         <div className="brand">
-          PSA Backlog<span>grading queue &amp; break-even tracker</span>
+          PreSlab<span>is it worth grading?</span>
         </div>
         <div className="spacer" />
         <SaveState disk={disk} />
