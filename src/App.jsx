@@ -690,15 +690,32 @@ export default function App() {
         </div>
         <div className="spacer" />
         <SaveState disk={disk} />
-        <div className="budget" title="Credits are charged per card, not per request. Resets daily.">
-          <span>{used}/{dailyLimit} calls today</span>
-          <div className="meter">
-            <i
-              className={pct > 90 ? 'bad' : pct > 70 ? 'warn' : ''}
-              style={{ width: pct + '%' }}
-            />
+        {/* On the shared trial key the meaningful number is the trial
+            allowance, not the account's whole daily quota. */}
+        {usage?.sharedLeft != null ? (
+          <div
+            className="budget"
+            title="Shared trial allowance. Add your own free key in Settings for your own daily quota."
+          >
+            <span>{usage.sharedLeft} trial lookups left</span>
+            <div className="meter">
+              <i
+                className={usage.sharedLeft < 100 ? 'bad' : usage.sharedLeft < 400 ? 'warn' : ''}
+                style={{ width: Math.min(100, (usage.sharedLeft / 2000) * 100) + '%' }}
+              />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="budget" title="Credits are charged per card, not per request. Resets daily.">
+            <span>{used}/{dailyLimit} calls today</span>
+            <div className="meter">
+              <i
+                className={pct > 90 ? 'bad' : pct > 70 ? 'warn' : ''}
+                style={{ width: pct + '%' }}
+              />
+            </div>
+          </div>
+        )}
         <div className="tabs">
           {[
             ['backlog', 'Backlog'],

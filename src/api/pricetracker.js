@@ -155,6 +155,10 @@ async function request(path, { retried = false } = {}) {
     minuteRemaining: numOrNull(res.headers.get('x-ratelimit-minute-remaining')),
     dailyReset: numOrNull(res.headers.get('x-ratelimit-daily-reset')),
     consumed: numOrNull(res.headers.get('x-api-calls-consumed')),
+    // Set by the relay when running on the shared trial key. Absent when the
+    // visitor has supplied their own.
+    sharedLeft: numOrNull(res.headers.get('x-shared-credits-left')),
+    keySource: res.headers.get('x-key-source') || null,
   }
 
   if (!res.ok) {

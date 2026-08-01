@@ -66,6 +66,40 @@ export default async function handler(req, res) {
   res.setHeader('x-key-source', visitorKey ? 'user' : 'shared')
 
   const body = await upstream.text()
+
+  /**
+   * Cap on how much of the shared key visitors may spend, so trying the app
+   * out cannot drain the owner's daily allowance.
+   *
+   * Derived from the upstream's own remaining-credit header rather than a
+   * counter here: serverless invocations share no memory, and a browser-side
+   * tally would reset the moment someone cleared their storage. This cannot be
+   * bypassed because the number comes from the API itself.
+   *
+   * Visitors using their own key are unaffected -- the cap exists to protect
+   * the shared one.
+   */
+  if (!visitorKey) {
+    const budget = Number(process.env.SHARED_KEY_CREDITS || 2000)
+    const limit = Number(upstream.headers.get('x-ratelimit-daily-limit'))
+    const remaining = Number(upstream.headers.get('x-ratelimit-daily-remaining'))
+
+    if (Number.isFinite(limit) && Number.isFinite(remaining)) {
+      const spent = limit - remaining
+      if (spent >= budget) {
+        res.status(429).json({
+          error:
+            `The shared trial allowance of ${budget} lookups is used up for today. ` +
+            `Add your own free API key in Settings to keep going — you'll get your ` +
+            `own daily allowance and won't share it with anyone.`,
+          code: 'SHARED_BUDGET_EXHAUSTED',
+        })
+        return
+      }
+      res.setHeader('x-shared-credits-left', String(Math.max(0, budget - spent)))
+    }
+  }
+
   res.status(upstream.status)
   res.setHeader('content-type', upstream.headers.get('content-type') || 'application/json')
   res.send(body)
