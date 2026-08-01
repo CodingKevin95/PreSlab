@@ -41,8 +41,25 @@ export default async function handler(req, res) {
   const apiKey = visitorKey || process.env.POKEMONPRICETRACKER_API_KEY
 
   if (!apiKey) {
+    // Names only, never values -- enough to spot a typo or a variable scoped
+    // to the wrong environment without leaking anything.
+    const visible = Object.keys(process.env)
+      .filter((k) => /poke|price|tracker|api.?key/i.test(k))
+      .sort()
+
     res.status(500).json({
-      error: 'No API key configured. Add POKEMONPRICETRACKER_API_KEY in the deployment settings, or paste your own key in Settings.',
+      error:
+        'No API key configured. Add POKEMONPRICETRACKER_API_KEY in the deployment ' +
+        'settings and redeploy, or paste your own key in Settings.',
+      code: 'NO_API_KEY',
+      diagnostic: {
+        expected: 'POKEMONPRICETRACKER_API_KEY',
+        similarVarsFound: visible.length ? visible : '(none)',
+        totalEnvVars: Object.keys(process.env).length,
+        hint: visible.length
+          ? 'A similar name exists — check it matches exactly.'
+          : 'Nothing similar is set. Either it was never saved, it is scoped to a different environment, or the deployment predates it — redeploy after adding.',
+      },
     })
     return
   }
