@@ -19,7 +19,7 @@ export default function ScreenerPanel({
 }) {
   const [minPrice, setMinPrice] = useState('1')
   const [maxPrice, setMaxPrice] = useState('1000000')
-  const [count, setCount] = useState(50)
+  const [count, setCount] = useState(200)
   const [showBand, setShowBand] = useState(false)
   const [minWeekly, setMinWeekly] = useState('25')
   const [minSales, setMinSales] = useState('3')
@@ -91,7 +91,9 @@ export default function ScreenerPanel({
           <div style={{ width: 150 }}>
             <label className="small muted">Cards to scan</label>
             <select value={count} onChange={(e) => setCount(Number(e.target.value))}>
-              {[25, 50, 100, 200, 500, 1000].map((n) => (
+              {/* Multiples of the 100-card page, so every scan size reuses the
+                  same cached pages instead of paying for its own. */}
+              {[100, 200, 500, 1000].map((n) => (
                 <option key={n} value={n}>{n} cards</option>
               ))}
             </select>
@@ -126,9 +128,10 @@ export default function ScreenerPanel({
         )}
 
         <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
-          Most valuable cards first, 2 credits each — graded sale data has to be
-          fetched before anything can be ranked, so the field cannot be narrowed
-          before paying for it.
+          Most valuable cards first, up to 2 credits each — graded sale data has to
+          be fetched before anything can be ranked, so the field cannot be narrowed
+          before paying for it. Results are shared for six hours, so a scan someone
+          has already run today costs nothing.
         </p>
 
         {progress && (

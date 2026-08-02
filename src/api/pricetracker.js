@@ -345,15 +345,19 @@ export async function scanMarket({
   for (let i = 0; i < pages; i++) {
     if (shouldStop?.()) break
 
-    // Last page is trimmed to the requested count so asking for 25 costs 25
-    // cards' worth of credits rather than a full page.
-    const want = Math.min(PAGE, count - out.length)
-    if (want <= 0) break
+    /*
+      Always a full page, never trimmed to the remaining count.
 
+      The CDN caches by exact URL, so a scan asking for `limit=25` would miss a
+      cached `limit=100` covering the same cards and pay for them again. Fixed
+      pages mean every scan size walks the same URLs, so one person's scan warms
+      the cache for everyone else's -- which matters far more than the credits a
+      partial last page would have saved.
+    */
     const params = new URLSearchParams({
       minPrice: String(minPrice),
       maxPrice: String(maxPrice),
-      limit: String(want),
+      limit: String(PAGE),
       offset: String(i * PAGE),
       includeEbay: 'true',
       // Most valuable first. Cards worth grading cluster at the top, and a
@@ -383,10 +387,10 @@ export async function scanMarket({
 
     // A short page means the band is exhausted; asking for more just burns
     // credits returning nothing.
-    if (batch.length < want) break
+    if (batch.length < PAGE) break
   }
 
-  return { cards: out, usage, total }
+  return { cards: out.slice(0, count), usage, total }
 }
 
 /**
