@@ -387,10 +387,10 @@ function Submission({
                   >
                     Paid ea.
                   </th>
-                  <th className="num">Raw ea.</th>
+                  <th className="num" title="Raw market value of one copy">Raw value</th>
                   <th>Tier</th>
                   <th>Target</th>
-                  <th className="num">PSA ea.</th>
+                  <th className="num" title="Value of one copy at the target grade">Graded value</th>
                   {/* Measured against what you paid, not market value: the
                       grade-or-sell decision is already made for these cards. */}
                   <th

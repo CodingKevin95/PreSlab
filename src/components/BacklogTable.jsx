@@ -237,10 +237,10 @@ export default function BacklogTable({
               >
                 Paid ea.
               </th>
-              <th className="num" title="Raw market value of one copy">Raw ea.</th>
+              <th className="num" title="Raw market value of one copy">Raw value</th>
               <th title="Chosen from the declared value, which defaults to the expected graded price">Tier</th>
               <th>Target</th>
-              <th className="num" title="Value of one copy at the target grade">PSA ea.</th>
+              <th className="num" title="Value of one copy at the target grade">Graded value</th>
               <th
                 className="num"
                 title="Net gain on one copy versus selling it raw, with ROI beneath. Totals are in the summary above."
