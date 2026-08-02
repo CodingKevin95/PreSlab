@@ -127,6 +127,19 @@ function CostBasis({ card, a, onPatch }) {
 
       {a.lineProfit != null ? (
         <div className="calc" style={{ marginTop: 10 }}>
+          {/* What the whole row is worth if every copy hits the target grade,
+              stated before the deductions so the headline number is visible
+              without working backwards from the after-fees figure. */}
+          <div>
+            <span>PSA {a.targetGrade} value</span>
+            <span>{money(a.lineGraded)}</span>
+          </div>
+          {a.qty > 1 && (
+            <div className="muted small calc-note">
+              <span>{a.qty} × {money(a.gradedPrice)} if every copy hits</span>
+              <span />
+            </div>
+          )}
           <div><span>Spent</span><span>{money(a.paidTotal)}</span></div>
           <div><span>Grading</span><span>{money(a.gradingCost * a.qty)}</span></div>
           <div>
