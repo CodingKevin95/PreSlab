@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
 import { getCard } from '../api/pricetracker'
 import CardThumb from './CardThumb'
-import { analyzeCard, money, percent, nearestGrade, statusOf, STATUSES, GRADE_OPTIONS } from '../lib/psa'
+import {
+  analyzeCard, money, percent, nearestGrade, statusOf, STATUSES, GRADE_OPTIONS,
+  resolveGradePrice,
+} from '../lib/psa'
 
 /**
  * Cost basis entry: one price per copy owned.
@@ -495,8 +498,18 @@ function Row({
                     <div className="grade-grid">
                       {Object.entries(card.gradedPrices)
                         .sort((x, y) => Number(y[0]) - Number(x[0]))
-                        .map(([g, price]) => {
+                        .map(([g, flat]) => {
                           const meta = card.gradedMeta?.[g]
+                          /*
+                            Resolved through the same price basis the breakdown
+                            uses, so a tile and the math beside it can never
+                            quote two different prices for the same grade. The
+                            flat all-sales average stays available in the
+                            tooltip, since that is the number this used to show.
+                          */
+                          const resolved = resolveGradePrice(meta, settings.priceBasis || 'smart')
+                          const price = resolved ? resolved.price : flat
+                          const differs = resolved && Math.abs(price - flat) >= 0.005
                           return (
                             <button
                               key={g}
@@ -504,7 +517,9 @@ function Row({
                               onClick={() => onPatch({ targetGrade: Number(g) })}
                               title={
                                 meta
-                                  ? `Average of ${meta.count} eBay sale${meta.count === 1 ? '' : 's'}` +
+                                  ? `${resolved ? resolved.label : 'Average'} · ` +
+                                    `${meta.count} eBay sale${meta.count === 1 ? '' : 's'}` +
+                                    (differs ? ` · all sales average ${money(flat)}` : '') +
                                     (meta.median ? ` · median ${money(meta.median)}` : '') +
                                     (meta.lastSale ? ` · last ${new Date(meta.lastSale).toLocaleDateString()}` : '')
                                   : 'Use this grade as the target'
