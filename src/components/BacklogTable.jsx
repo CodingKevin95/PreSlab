@@ -251,7 +251,7 @@ export default function BacklogTable({
                 className="num"
                 title={`The same net gain on one copy once ${feePct}% selling fees come out, with ROI beneath`}
               >
-                After fees ea.
+                After fees
               </th>
               <th style={{ width: 34 }}></th>
             </tr>

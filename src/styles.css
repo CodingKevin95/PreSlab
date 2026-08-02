@@ -163,9 +163,12 @@ select.mini { padding: 4px 26px 4px 8px; }
 .tbl-wrap::-webkit-scrollbar-thumb:hover { background: #3a4557; }
 
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+/* Horizontal padding is deliberately tight. With thirteen columns every pixel
+   is paid thirteen times over, and the table has to fit a laptop screen without
+   sideways scrolling. */
 th {
-  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .55px;
-  color: var(--dim); font-weight: 600; padding: 9px 10px; white-space: nowrap;
+  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
+  color: var(--dim); font-weight: 600; padding: 9px 6px; white-space: nowrap;
   /* Pinned so the column names stay readable however far you scroll. Uses a
      shadow rather than a border because borders detach from sticky cells. */
   position: sticky;
@@ -175,11 +178,13 @@ th {
   box-shadow: inset 0 -1px 0 var(--line);
 }
 th.num, td.num { text-align: right; }
-td { padding: 8px 9px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+td { padding: 8px 6px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
 
 /* The card cell collapses to nothing once enough columns compete for width,
-   wrapping the name over four lines and making every row tall. */
-th.card-col, td.card-col { min-width: 240px; }
+   wrapping the name over four lines and making every row tall. Low enough that
+   the table still fits without sideways scrolling, since this is the column
+   that absorbs whatever space the fixed ones leave. */
+th.card-col, td.card-col { min-width: 190px; }
 
 /* Narrow columns whose contents are always short. */
 th.qty-col, td.qty-col { width: 46px; }
