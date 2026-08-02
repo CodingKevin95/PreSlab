@@ -604,7 +604,28 @@ function Row({
                       <span>{money(a.gradedPrice)}</span>
                     </div>
                     {a.priceSource && (
-                      <div className="muted small calc-note">
+                      /* Spelled out on hover: the shorthand says which figure
+                         was used but not what it is made of, and the sale
+                         count and the window it covers are different things. */
+                      <div
+                        className="muted small calc-note"
+                        title={
+                          `Where this price comes from. ` +
+                          (a.priceSource.field === 'smart'
+                            ? `The provider's own estimate: recent eBay sales with extreme ` +
+                              `prices dropped and the rest weighted` +
+                              (a.priceSource.days ? `, covering the last ${a.priceSource.days} days. ` : '. ') +
+                              (a.priceSource.confidence
+                                ? `Confidence is ${a.priceSource.confidence}, meaning there were ` +
+                                  `${a.priceSource.confidence === 'high' ? 'plenty of' : 'few'} ` +
+                                  `consistent sales to work from. `
+                                : '')
+                            : `${a.priceSource.label}. `) +
+                          (a.gradeMeta?.count != null
+                            ? `${a.gradeMeta.count} graded sales on record for this grade in total.`
+                            : '')
+                        }
+                      >
                         <span>
                           {a.priceSource.label}
                           {a.priceSource.confidence ? ` · ${a.priceSource.confidence} confidence` : ''}
@@ -647,9 +668,6 @@ function Row({
                       <span className={'verdict ' + verdictOf(a.upliftNet)}>
                         {money(a.upliftNet)} ({percent(a.roiNet)})
                       </span>
-                    </div>
-                    <div className="muted small calc-note">
-                      <span>break-even sale price</span><span>{money(a.breakEven)}</span>
                     </div>
                   </div>
                 )}
