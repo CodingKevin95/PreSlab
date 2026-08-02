@@ -211,7 +211,17 @@ async function request(path, { retried = false } = {}) {
   return { json, usage: cdnHit ? null : usage, cdnHit }
 }
 
+/**
+ * Absent has to stay absent.
+ *
+ * Number(null) is 0 and Number('') is 0, both of which pass a finite check, so
+ * a header the server never sent came back as a real zero. That read as "no
+ * credits left" -- the dev server sends no shared-trial header at all, so
+ * running locally showed a permanent "0 trial lookups left" in place of the
+ * actual daily quota.
+ */
 function numOrNull(v) {
+  if (v == null || v === '') return null
   const n = Number(v)
   return Number.isFinite(n) ? n : null
 }
