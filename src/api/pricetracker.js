@@ -11,7 +11,12 @@ const TTL = {
   search: 1000 * 60 * 60 * 6,
   card: 1000 * 60 * 60 * 6,
   graded: 1000 * 60 * 60 * 24,
+  // Sets change only when a new expansion ships, and prices are not involved,
+  // so this can be held far longer than anything price-derived.
+  sets: 1000 * 60 * 60 * 24 * 7,
 }
+
+const SETS_KEY = 'sets:v1'
 
 // Bumped to v2 to discard entries written before the fallback verified card
 // identity: a wrong card cached under the right card's key would otherwise
@@ -240,6 +245,9 @@ function slimCard(c) {
     pptId: c.id,
     name: c.name,
     setName: c.setName,
+    // Joins to a set's series and release date. Cards carry the set id but not
+    // the series, so the era has to come from the sets endpoint.
+    setId: c.setId ?? null,
     number: c.cardNumber,
     rarity: c.rarity,
     image: c.imageCdnUrl200 || c.imageUrl || null,
@@ -315,6 +323,40 @@ export async function searchCards({ q, limit = 6, withGraded = false, language =
   const slim = (json.data || []).map((c) => ({ ...slimCard(c), language }))
   cacheSet(key, slim)
   return { data: slim, cached: false, usage, total: json.metadata?.total ?? slim.length }
+}
+
+/**
+ * Every set, keyed by the id cards refer to, for resolving a card's era.
+ *
+ * Cards carry `setId` and `setName` but not the series, so "SV", "SWSH" and
+ * "ME" are only readable as prefixes on a set's name -- and plenty of sets have
+ * no prefix at all. The sets endpoint states the series outright.
+ *
+ * Charged per page rather than per set, so all 217 sets cost 3 credits, and
+ * cached for a week since a set's era never changes once it has shipped.
+ */
+export async function getSets() {
+  const cached = cacheGet(SETS_KEY, TTL.sets)
+  if (cached) return { sets: cached, cached: true }
+
+  const out = []
+  for (let offset = 0; offset < 2000; offset += 100) {
+    const { json } = await request(`/sets?limit=100&offset=${offset}`)
+    const batch = json?.data || []
+    for (const s of batch) {
+      out.push({
+        setId: s.tcgPlayerNumericId ?? null,
+        name: s.name || '',
+        series: s.series || null,
+        releaseDate: s.releaseDate || null,
+      })
+    }
+    if (batch.length < 100) break
+    if (json?.metadata?.hasMore === false) break
+  }
+
+  cacheSet(SETS_KEY, out)
+  return { sets: out, cached: false }
 }
 
 /**

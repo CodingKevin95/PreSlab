@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import CardThumb from './CardThumb'
-import { scanMarket } from '../api/pricetracker'
+import { scanMarket, getSets } from '../api/pricetracker'
 import { screenMarket, money, percent } from '../lib/psa'
 
 /**
@@ -29,6 +29,8 @@ export default function ScreenerPanel({
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(null)
   const [scanInfo, setScanInfo] = useState(null)
+  const [sets, setSets] = useState(null)
+  const [era, setEra] = useState('all')
 
   const creditCost = count * 2
 
@@ -37,13 +39,20 @@ export default function ScreenerPanel({
     setProgress(null)
     onError(null)
     try {
-      const { cards, usage, total } = await scanMarket({
-        minPrice: Number(minPrice) || 1,
-        maxPrice: Number(maxPrice) || 1000000,
-        count,
-        onProgress: (p) => setProgress(p),
-      })
+      // Fetched alongside the scan so results can show which era each card is
+      // from. Three credits, and cached for a week, so it is effectively a
+      // one-off next to the scan itself.
+      const [{ cards, usage, total }, setsRes] = await Promise.all([
+        scanMarket({
+          minPrice: Number(minPrice) || 1,
+          maxPrice: Number(maxPrice) || 1000000,
+          count,
+          onProgress: (p) => setProgress(p),
+        }),
+        getSets().catch(() => null),
+      ])
       setScanned(cards)
+      if (setsRes?.sets) setSets(setsRes.sets)
       setScanInfo({ total, at: Date.now() })
       if (usage) onUsage(usage)
     } catch (err) {
@@ -66,8 +75,29 @@ export default function ScreenerPanel({
       })
     : null
 
+  const seriesById = useMemo(() => {
+    const m = new Map()
+    for (const s of sets || []) if (s.setId != null) m.set(String(s.setId), s)
+    return m
+  }, [sets])
+
+  const eraOf = (s) => seriesById.get(String(s.setId))?.series || null
+
+  // Only eras actually present in the results, so the dropdown never offers a
+  // choice that filters everything away.
+  const eras = useMemo(() => {
+    const seen = new Set()
+    for (const r of result?.rows || []) {
+      const e = eraOf(r.scanned)
+      if (e) seen.add(e)
+    }
+    return [...seen].sort()
+  }, [result, seriesById])
+
   const rows = result
-    ? (hideSuspect ? result.rows.filter((r) => !r.suspect) : result.rows).slice(0, 25)
+    ? (hideSuspect ? result.rows.filter((r) => !r.suspect) : result.rows)
+        .filter((r) => era === 'all' || eraOf(r.scanned) === era)
+        .slice(0, 25)
     : []
   const suspectCount = result ? result.rows.filter((r) => r.suspect).length : 0
 
@@ -158,6 +188,17 @@ export default function ScreenerPanel({
               <label className="small muted">Min PSA 10 sales</label>
               <input value={minSales} onChange={(e) => setMinSales(e.target.value)} />
             </div>
+            {eras.length > 1 && (
+              <div style={{ width: 180 }}>
+                <label className="small muted">Era</label>
+                <select value={era} onChange={(e) => setEra(e.target.value)}>
+                  <option value="all">All eras</option>
+                  {eras.map((e) => (
+                    <option key={e} value={e}>{e}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <label
               className="small"
               style={{ display: 'flex', gap: 6, alignItems: 'center', paddingBottom: 8 }}
@@ -274,6 +315,12 @@ export default function ScreenerPanel({
                             )}
                           </div>
                           <div className="small muted">
+                            {eraOf(s) && (
+                              <>
+                                <span style={{ color: 'var(--accent)' }}>{eraOf(s)}</span>
+                                {' · '}
+                              </>
+                            )}
                             {s.setName} · #{s.number}
                           </div>
                         </div>
