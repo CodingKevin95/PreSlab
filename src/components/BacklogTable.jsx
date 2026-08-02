@@ -397,7 +397,9 @@ function Row({
             className="mini"
             value={a.targetGrade}
             onChange={(e) => onPatch({ targetGrade: Number(e.target.value) })}
-            style={{ width: 86 }}
+            /* Wide enough for "PSA 9.5", the longest option -- the previous
+               width clipped it and "PSA 10" against the dropdown arrow. */
+            style={{ width: 100 }}
           >
             {GRADE_OPTIONS.map((g) => (
               <option key={g} value={g}>PSA {g}</option>

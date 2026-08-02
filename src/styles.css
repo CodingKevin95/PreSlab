@@ -69,7 +69,7 @@ input.mini { padding: 4px 7px; }
 /* The native dropdown arrow is painted inside the box, so selects need extra
    right padding or long values render underneath it. */
 select { padding-right: 30px; }
-select.mini { padding: 4px 30px 4px 8px; }
+select.mini { padding: 4px 26px 4px 8px; }
 
 /* ---------- layout ---------- */
 
