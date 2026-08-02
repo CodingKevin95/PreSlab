@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import CardThumb from './CardThumb'
 import { scanMarket, getSets } from '../api/pricetracker'
 import { screenMarket, money, percent } from '../lib/psa'
@@ -31,6 +31,29 @@ export default function ScreenerPanel({
   const [scanInfo, setScanInfo] = useState(null)
   const [sets, setSets] = useState(null)
   const [era, setEra] = useState('all')
+  // Which era to scan, as opposed to `era`, which narrows results already paid
+  // for. Choosing here is what stops credits going on eras you don't want.
+  const [scanEra, setScanEra] = useState('all')
+
+  // Loaded up front so the era can be chosen before spending anything. Three
+  // credits, cached for a week, and it fails quietly -- an unavailable set list
+  // should cost the scan button, not disable it.
+  useEffect(() => {
+    let live = true
+    getSets()
+      .then((r) => { if (live && r?.sets) setSets(r.sets) })
+      .catch(() => {})
+    return () => { live = false }
+  }, [])
+
+  const scannableEras = useMemo(() => {
+    const counts = new Map()
+    for (const s of sets || []) {
+      if (!s.series || s.setId == null) continue
+      counts.set(s.series, (counts.get(s.series) || 0) + 1)
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])
+  }, [sets])
 
   const creditCost = count * 2
 
@@ -42,18 +65,18 @@ export default function ScreenerPanel({
       // Fetched alongside the scan so results can show which era each card is
       // from. Three credits, and cached for a week, so it is effectively a
       // one-off next to the scan itself.
-      const [{ cards, usage, total }, setsRes] = await Promise.all([
-        scanMarket({
-          minPrice: Number(minPrice) || 1,
-          maxPrice: Number(maxPrice) || 1000000,
-          count,
-          onProgress: (p) => setProgress(p),
-        }),
-        getSets().catch(() => null),
-      ])
+      const { cards, usage, total } = await scanMarket({
+        minPrice: Number(minPrice) || 1,
+        maxPrice: Number(maxPrice) || 1000000,
+        count,
+        series: scanEra === 'all' ? null : scanEra,
+        onProgress: (p) => setProgress(p),
+      })
       setScanned(cards)
-      if (setsRes?.sets) setSets(setsRes.sets)
-      setScanInfo({ total, at: Date.now() })
+      setScanInfo({ total, at: Date.now(), series: scanEra })
+      // Results are already one era, so the post-scan narrowing would only
+      // repeat the choice just made.
+      setEra('all')
       if (usage) onUsage(usage)
     } catch (err) {
       onError(err)
@@ -118,6 +141,20 @@ export default function ScreenerPanel({
         </p>
 
         <div className="row wrap" style={{ gap: 12, alignItems: 'flex-end' }}>
+          <div style={{ width: 210 }}>
+            <label
+              className="small muted"
+              title="Scans only this era's sets, so credits are not spent on cards you would filter out afterwards."
+            >
+              Era to scan
+            </label>
+            <select value={scanEra} onChange={(e) => setScanEra(e.target.value)}>
+              <option value="all">Everything, priciest first</option>
+              {scannableEras.map(([name, n]) => (
+                <option key={name} value={name}>{name} ({n} sets)</option>
+              ))}
+            </select>
+          </div>
           <div style={{ width: 150 }}>
             <label className="small muted">Cards to scan</label>
             <select value={count} onChange={(e) => setCount(Number(e.target.value))}>
@@ -158,9 +195,13 @@ export default function ScreenerPanel({
         )}
 
         <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
-          Most valuable cards first, up to 2 credits each — graded sale data has to
-          be fetched before anything can be ranked, so the field cannot be narrowed
-          before paying for it. Results are shared for six hours, so a scan someone
+          {scanEra === 'all'
+            ? 'Most valuable cards first across every era — which in practice means '
+              + 'mostly vintage, since those carry the highest prices.'
+            : `Spread evenly across the ${scanEra} sets, most valuable first in each, `
+              + 'so the whole era is represented rather than just its newest releases.'}
+          {' '}Up to 2 credits per card: graded sale data has to be fetched before
+          anything can be ranked. Results are shared for six hours, so a scan someone
           has already run today costs nothing.
         </p>
 

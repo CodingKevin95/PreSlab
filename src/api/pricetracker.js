@@ -375,9 +375,77 @@ export async function getSets() {
  * Pages are 100 rather than the documented 200: asking for more still returns
  * 100 once ebay data is included.
  */
+function scanRow(c, language) {
+  return {
+    ...slimCard(c),
+    language,
+    velocity: c.ebay?.salesVelocity || null,
+    totalSales: c.ebay?.totalSales ?? 0,
+    salesFrom: c.ebay?.dateRangeStart || null,
+    salesTo: c.ebay?.dateRangeEnd || null,
+  }
+}
+
+/**
+ * Scans one era by walking its sets.
+ *
+ * There is no series filter on the cards endpoint, and setId takes exactly one
+ * value -- comma-separated and repeated forms both fail -- so an era has to be
+ * covered a set at a time.
+ *
+ * The budget is split evenly across the era's sets rather than spent on the
+ * first few, so a scan represents the whole era instead of just its newest
+ * releases. The split is derived from the era and the count alone, which keeps
+ * the URLs deterministic: two people scanning the same era at the same size
+ * fetch identical pages and the second pays nothing.
+ */
+async function scanSeries({ series, count, language, onProgress, shouldStop }) {
+  const { sets } = await getSets()
+  const inEra = sets
+    .filter((s) => s.series === series && s.setId != null)
+    .sort((a, b) => String(b.releaseDate || '').localeCompare(String(a.releaseDate || '')))
+
+  if (!inEra.length) return { cards: [], usage: null, total: 0 }
+
+  /*
+    Rounded down, so every set gets a share and the total stays inside the
+    budget that was quoted. Rounding up would either overshoot what the button
+    said, or exhaust the budget partway through and leave the oldest sets in
+    the era unscanned while claiming to have covered it.
+  */
+  const perSet = Math.min(100, Math.max(1, Math.floor(count / inEra.length)))
+  const out = []
+  let usage = null
+
+  for (const [i, s] of inEra.entries()) {
+    if (shouldStop?.()) break
+
+    const params = new URLSearchParams({
+      setId: String(s.setId),
+      limit: String(perSet),
+      offset: '0',
+      includeEbay: 'true',
+      sortBy: 'price',
+      sortOrder: 'desc',
+    })
+    if (language && language !== 'english') params.set('language', language)
+
+    const res = await request(`/cards?${params}`)
+    usage = res.usage || usage
+    for (const c of res.json?.data || []) out.push(scanRow(c, language))
+
+    onProgress?.({ scanned: out.length, page: i + 1, pages: inEra.length, total: count, usage })
+  }
+
+  return { cards: out.slice(0, count), usage, total: inEra.length }
+}
+
 export async function scanMarket({
-  minPrice = 1, maxPrice = 1000000, count = 100, language = 'english', onProgress, shouldStop,
+  minPrice = 1, maxPrice = 1000000, count = 100, series = null,
+  language = 'english', onProgress, shouldStop,
 } = {}) {
+  if (series) return scanSeries({ series, count, language, onProgress, shouldStop })
+
   const PAGE = 100
   const pages = Math.max(1, Math.ceil(count / PAGE))
   const out = []
@@ -414,16 +482,7 @@ export async function scanMarket({
     total = res.json?.metadata?.total ?? total
 
     const batch = res.json?.data || []
-    for (const c of batch) {
-      out.push({
-        ...slimCard(c),
-        language,
-        velocity: c.ebay?.salesVelocity || null,
-        totalSales: c.ebay?.totalSales ?? 0,
-        salesFrom: c.ebay?.dateRangeStart || null,
-        salesTo: c.ebay?.dateRangeEnd || null,
-      })
-    }
+    for (const c of batch) out.push(scanRow(c, language))
 
     onProgress?.({ scanned: out.length, page: i + 1, pages, total, usage })
 
