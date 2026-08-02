@@ -35,9 +35,25 @@ export default async function handler(req, res) {
   const rawUrl = req.url || ''
   const qIndex = rawUrl.indexOf('?')
   const rawPath = qIndex === -1 ? rawUrl : rawUrl.slice(0, qIndex)
-  const qs = qIndex === -1 ? '' : rawUrl.slice(qIndex + 1)
 
   const path = rawPath.replace(/^\/api\/tcg/, '') || '/'
+
+  /**
+   * The routing layer appends the catch-all segment to the query string as
+   * "...path=cards". The upstream rejects any parameter it doesn't recognise,
+   * so forwarding it verbatim fails the whole request -- drop it here.
+   *
+   * Filtered as raw pairs rather than through URLSearchParams so values keep
+   * their original encoding and are passed on byte for byte.
+   */
+  const qs = (qIndex === -1 ? '' : rawUrl.slice(qIndex + 1))
+    .split('&')
+    .filter((pair) => {
+      if (!pair) return false
+      const key = decodeURIComponent(pair.split('=')[0])
+      return !/^\.*path$/.test(key)
+    })
+    .join('&')
 
   // A visitor's own key takes precedence over the shared one, so bringing your
   // own key lifts you off this deployment's quota.
