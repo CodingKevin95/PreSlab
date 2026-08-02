@@ -140,12 +140,14 @@ function CostBasis({ card, a, onPatch }) {
               <span />
             </div>
           )}
-          <div><span>Spent</span><span>{money(a.paidTotal)}</span></div>
-          <div><span>Grading</span><span>{money(a.gradingCost * a.qty)}</span></div>
+          {/* Straight after the gross figure it is deducted from, so the two
+              read as one step before the costs are taken off. */}
           <div>
             <span>Sale after {Math.round(a.feeRate * 100)}% fees</span>
             <span>{money(a.lineProceeds)}</span>
           </div>
+          <div><span>Spent</span><span>{money(a.paidTotal)}</span></div>
+          <div><span>Grading</span><span>{money(a.gradingCost * a.qty)}</span></div>
           <div className="tot">
             <span>{a.hasCost ? 'Profit' : 'Profit at market cost'}</span>
             <span className={'verdict ' + verdictOf(a.lineProfit)}>
