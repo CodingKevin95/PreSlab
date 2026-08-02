@@ -30,7 +30,7 @@ export default function StatsBar({ roll }) {
             : 'if sold ungraded'
         }
       />
-      <Stat k="Grading cost" v={money(roll.costTotal, { cents: false })} n="fees + shipping" />
+      <Stat k="Grading cost" v={money(roll.costTotal, { cents: false })} n="PSA fees" />
       <Stat
         k="PSA value"
         v={money(roll.gradedTotal, { cents: false })}

@@ -158,9 +158,8 @@ function Submission({
       assumed: acc.assumed + a.assumedCount,
       profit: acc.profit + (a.lineProfit ?? 0),
       withComps: acc.withComps + (a.gradedPrice != null ? 1 : 0),
-      fees: acc.fees + a.fee * a.qty,
     }),
-    { raw: 0, cost: 0, graded: 0, uplift: 0, upliftNet: 0, spent: 0, assumed: 0, profit: 0, withComps: 0, fees: 0 }
+    { raw: 0, cost: 0, graded: 0, uplift: 0, upliftNet: 0, spent: 0, assumed: 0, profit: 0, withComps: 0 }
   )
 
   // Which tiers this batch unlocks purely by being big enough.
@@ -241,7 +240,7 @@ function Submission({
           v={money(totals.raw, { cents: false })}
           n={priced ? `priced ${agoLabel(priced.oldest)}` : undefined}
         />
-        <Mini k="Grading cost" v={money(totals.cost, { cents: false })} n={`${money(totals.fees, { cents: false })} fees + shipping`} />
+        <Mini k="Grading cost" v={money(totals.cost, { cents: false })} n="PSA fees" />
         <Mini k="PSA value" v={money(totals.graded, { cents: false })} n={`at target grade · ${totals.withComps}/${cards.length} have comps`} />
         {/* This is the ceiling, not a forecast -- it assumes every card comes
             back at its target grade. The scenario tiles below temper it. */}

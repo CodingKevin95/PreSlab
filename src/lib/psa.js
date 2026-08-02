@@ -338,15 +338,13 @@ export function tierById(id, tiers) {
  * Grading economics for one card.
  *
  * The comparison that matters is: what the card is worth raw today, versus
- * what it is worth graded minus what grading costs. Shipping is counted per
- * card so a single card in a submission carries the whole shipping burden and
- * a 20-card submission barely notices it.
+ * what it is worth graded minus what grading costs.
  */
 /**
  * @param submissionSize Cards in the batch this card actually ships in. When a
  *   card is assigned to a submission this is that submission's real count, so
- *   tier eligibility and the shipping split stop being guesses. Falls back to
- *   the planning default in settings for cards still sitting in the backlog.
+ *   tier eligibility stops being a guess. Falls back to the planning default
+ *   in settings for cards still sitting in the backlog.
  */
 export function analyzeCard(card, tiers, settings, submissionSize) {
   // Quantity multiplies everything except the tier decision -- PSA declares
@@ -390,9 +388,8 @@ export function analyzeCard(card, tiers, settings, submissionSize) {
   // No configured tier covers this declared value. Treating the fee as zero
   // would make an expensive card look free to grade, so flag it instead.
   const tierMissing = !tier
-  const perCardShipping = num(settings.shippingTotal) / batchSize
   const fee = tier ? num(tier.fee) : 0
-  const gradingCost = fee + perCardShipping
+  const gradingCost = fee
 
   let uplift = null
   let multiple = null
@@ -460,7 +457,6 @@ export function analyzeCard(card, tiers, settings, submissionSize) {
     tier,
     tierMissing,
     fee,
-    perCardShipping,
     gradingCost,
     targetGrade,
     gradedPrice,

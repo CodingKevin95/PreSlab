@@ -115,28 +115,16 @@ export default function SettingsPanel({
       <div className="panel">
         <h2>Submission costs</h2>
         <p className="sub">
-          Shipping is split across the cards in a submission, so a card in a 20-card
-          batch carries far less of it than a card sent on its own.
+          Used for cards still in the backlog, to work out which tiers they qualify
+          for. Cards already in a submission use that submission's real count.
         </p>
         <div className="row wrap">
-          <div style={{ width: 220 }}>
-            <label className="small muted">Round-trip shipping + insurance</label>
-            <input
-              value={settings.shippingTotal}
-              onChange={(e) => setSettings({ ...settings, shippingTotal: e.target.value })}
-            />
-          </div>
           <div style={{ width: 220 }}>
             <label className="small muted">Cards per submission</label>
             <input
               value={settings.shipmentSize}
               onChange={(e) => setSettings({ ...settings, shipmentSize: e.target.value })}
             />
-          </div>
-          <div style={{ alignSelf: 'flex-end' }}>
-            <span className="small muted">
-              = {money(Number(settings.shippingTotal || 0) / Math.max(1, Number(settings.shipmentSize) || 1))} per card
-            </span>
           </div>
         </div>
 

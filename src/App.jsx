@@ -58,7 +58,6 @@ import BacklogTable from './components/BacklogTable'
 import SettingsPanel from './components/SettingsPanel'
 
 const DEFAULT_SETTINGS = {
-  shippingTotal: '35',
   shipmentSize: '20',
   priceBasis: 'smart',
   sellFeePct: '15',
@@ -438,7 +437,7 @@ export default function App() {
     setSubmissions((prev) => prev.filter((s) => s.id !== id))
   }, [setCards, setSubmissions])
 
-  // A card's real batch size drives its tier and shipping split.
+  // A card's real batch size drives which tiers it qualifies for.
   const sizeFor = useCallback(
     (card) => (card.submissionId ? submissionUnits(card.submissionId, cards) : undefined),
     [cards]

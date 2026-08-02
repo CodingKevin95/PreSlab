@@ -562,9 +562,8 @@ function Row({
                   </div>
                 ) : (
                   <div className="calc">
-                    {/* Built up line by line so every deduction is visible. The
-                        raw value it gets compared against is already in the
-                        Raw ea. column, so it is not restated here. */}
+                    {/* Built up line by line so every deduction is visible and
+                        the figures add up to the total on screen. */}
                     <div className="calc-head">
                       <span>Grade it and sell</span><span />
                     </div>
@@ -596,40 +595,30 @@ function Row({
                         <span>{a.tier.name} fee</span><span>−{money(a.fee)}</span>
                       </div>
                     )}
-                    <div>
-                      <span>Shipping share</span><span>−{money(a.perCardShipping)}</span>
-                    </div>
                     {/*
-                      The cost of the card itself is the last deduction, so the
-                      column ends on a single answer instead of handing off to
-                      a second section.
+                      The card itself is the last deduction, so the column ends
+                      on a single answer instead of handing off to a second
+                      section.
 
-                      Which cost depends on what is known: real money spent when
-                      every copy has been priced, otherwise today's raw value,
-                      which answers the different question of whether grading
-                      beats selling as-is. The label says which one is in play.
+                      Deducted at today's raw value rather than what was paid,
+                      because this panel answers "is grading worth it" -- and
+                      the alternative to grading is selling raw today, whatever
+                      the card originally cost. That also keeps it consistent
+                      with the After fees column, which uses the same baseline.
                     */}
                     <div>
-                      <span>{a.hasCost ? 'What you paid' : 'Raw value today'}</span>
-                      <span>−{money(a.paidEach)}</span>
+                      <span>Raw value</span>
+                      <span>−{money(a.raw)}</span>
                     </div>
                     <div className="tot">
-                      <span>{a.hasCost ? 'Profit' : 'Better than selling raw by'}</span>
-                      <span className={'verdict ' + verdictOf(a.lineProfit / a.qty)}>
-                        {money(a.lineProfit / a.qty)} ({percent(a.profitRoi)})
+                      <span>Profit</span>
+                      <span className={'verdict ' + verdictOf(a.upliftNet)}>
+                        {money(a.upliftNet)} ({percent(a.roiNet)})
                       </span>
                     </div>
                     <div className="muted small calc-note">
                       <span>break-even sale price</span><span>{money(a.breakEven)}</span>
                     </div>
-                    {a.assumedCount > 0 && a.hasCost && (
-                      <div className="muted small calc-note">
-                        <span>
-                          {a.assumedCount} of {a.qty} assumed at market
-                        </span>
-                        <span />
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
