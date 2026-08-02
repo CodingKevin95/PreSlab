@@ -165,6 +165,10 @@ export default function App() {
   // searching the API costs credits, and the two should not look alike.
   const [addOpen, setAddOpen] = useState(false)
   const [addSeed, setAddSeed] = useState('')
+  // Screener results live here rather than in the panel, which unmounts when
+  // you switch tabs. Losing them meant re-running a scan that had already
+  // been paid for, every time you looked away.
+  const [screenerCache, setScreenerCache] = useState(null)
 
   const openAdd = useCallback((seed = '') => {
     setAddSeed(seed)
@@ -1028,6 +1032,8 @@ export default function App() {
           onUsage={handleUsage}
           onError={reportError}
           onGoToSettings={() => setTab('settings')}
+          cache={screenerCache}
+          setCache={setScreenerCache}
         />
       )}
 

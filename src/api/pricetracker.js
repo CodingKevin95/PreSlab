@@ -418,16 +418,41 @@ async function scanSeries({ series, count, language, onProgress, shouldStop }) {
   if (!inEra.length) return { cards: [], usage: null, total: 0 }
 
   /*
-    Rounded down, so every set gets a share and the total stays inside the
-    budget that was quoted. Rounding up would either overshoot what the button
-    said, or exhaust the budget partway through and leave the oldest sets in
-    the era unscanned while claiming to have covered it.
+    Rounded down to one of a few fixed sizes, for two reasons.
+
+    Down, so every set gets a share and the total stays inside the budget that
+    was quoted -- rounding up would either overshoot what the button said, or
+    exhaust the budget partway through and leave the oldest sets unscanned
+    while claiming to have covered the era.
+
+    Fixed sizes, because the page size is part of the URL and therefore part of
+    the cache key. An exact split gave almost every (era, count) pair its own
+    set of URLs, so two people scanning the same era at different sizes shared
+    nothing. Snapping to four steps means a 500-card and a 900-card scan of the
+    same era reuse the same fetched pages.
   */
-  const perSet = Math.min(100, Math.max(1, Math.floor(count / inEra.length)))
+  const STEPS = [10, 25, 50, 100]
+  const even = Math.floor(count / inEra.length)
+  const perSet = STEPS.filter((s) => s <= even).pop() || STEPS[0]
+
+  /*
+    An era with more sets than the budget covers is walked partially rather
+    than thinly.
+
+    Below the smallest step there is no page size that reaches every set inside
+    the budget, and falling back to the smallest one silently overspent -- a
+    46-set era on a 200-card budget fetched 460. Fewer sets at a usable depth
+    keeps the quoted figure honest; how many were reached is reported back so
+    the UI can say so rather than implying the era was covered.
+  */
+  const maxSets = Math.max(1, Math.floor(count / perSet))
+  const walking = inEra.slice(0, maxSets)
+
   const out = []
   let usage = null
+  let freePages = 0
 
-  for (const [i, s] of inEra.entries()) {
+  for (const [i, s] of walking.entries()) {
     if (shouldStop?.()) break
 
     const params = new URLSearchParams({
@@ -442,12 +467,20 @@ async function scanSeries({ series, count, language, onProgress, shouldStop }) {
 
     const res = await request(`/cards?${params}`)
     usage = res.usage || usage
+    if (res.cdnHit) freePages++
     for (const c of res.json?.data || []) out.push(scanRow(c, language))
 
-    onProgress?.({ scanned: out.length, page: i + 1, pages: inEra.length, total: count, usage })
+    onProgress?.({
+      scanned: out.length, page: i + 1, pages: walking.length, total: count, usage, freePages,
+    })
   }
 
-  return { cards: out.slice(0, count), usage, total: inEra.length }
+  return {
+    cards: out.slice(0, count), usage, freePages,
+    pages: walking.length,
+    setsCovered: walking.length,
+    setsTotal: inEra.length,
+  }
 }
 
 export async function scanMarket({

@@ -154,9 +154,23 @@ export default async function handler(req, res) {
    * pinned in front of a working API for hours.
    */
   if (upstream.ok) {
+    /*
+      Scans are held far longer than single lookups.
+
+      A scan is the expensive thing here -- hundreds of cards at two credits
+      each -- and what it reads is a graded sale average over a window of
+      months, which barely moves between one day and the next. Six hours meant
+      re-buying an entire scan four times a day for a number that had not
+      meaningfully changed.
+
+      Single-card lookups keep the shorter window, since those are read one at
+      a time against a decision to actually buy or send something.
+    */
+    const isScan = /[?&](setId|minPrice)=/.test(rawUrl)
+    const maxAge = isScan ? 86400 : 21600
     res.setHeader(
       'cache-control',
-      'public, s-maxage=21600, stale-while-revalidate=86400'
+      `public, s-maxage=${maxAge}, stale-while-revalidate=${maxAge * 2}`
     )
   } else {
     res.setHeader('cache-control', 'no-store')

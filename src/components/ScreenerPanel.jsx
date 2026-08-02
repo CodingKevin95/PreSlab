@@ -14,8 +14,16 @@ import { screenMarket, money, percent } from '../lib/psa'
  * changing a threshold re-filters what was already paid for instead of
  * scanning again.
  */
+/**
+ * @param cache Scan results held by the parent.
+ *
+ * Kept outside this component because the tab unmounts when you leave it, and
+ * losing the results meant every visit re-ran a scan that had already been paid
+ * for. Whether the repeat was billed depended on the CDN still holding the
+ * pages, which is not something the user can see or rely on.
+ */
 export default function ScreenerPanel({
-  tiers, settings, onAdd, onUsage, onError, owned, onGoToSettings,
+  tiers, settings, onAdd, onUsage, onError, owned, onGoToSettings, cache, setCache,
 }) {
   const [minPrice, setMinPrice] = useState('1')
   const [maxPrice, setMaxPrice] = useState('1000000')
@@ -25,11 +33,12 @@ export default function ScreenerPanel({
   const [minSales, setMinSales] = useState('3')
   const [hideSuspect, setHideSuspect] = useState(true)
 
-  const [scanned, setScanned] = useState(null)
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(null)
-  const [scanInfo, setScanInfo] = useState(null)
   const [sets, setSets] = useState(null)
+
+  const scanned = cache?.cards || null
+  const scanInfo = cache?.info || null
   const [era, setEra] = useState('all')
   // Which era to scan, as opposed to `era`, which narrows results already paid
   // for. Choosing here is what stops credits going on eras you don't want.
@@ -65,15 +74,20 @@ export default function ScreenerPanel({
       // Fetched alongside the scan so results can show which era each card is
       // from. Three credits, and cached for a week, so it is effectively a
       // one-off next to the scan itself.
-      const { cards, usage, total } = await scanMarket({
+      const { cards, usage, total, freePages, pages, setsCovered, setsTotal } = await scanMarket({
         minPrice: Number(minPrice) || 1,
         maxPrice: Number(maxPrice) || 1000000,
         count,
         series: scanEra === 'all' ? null : scanEra,
         onProgress: (p) => setProgress(p),
       })
-      setScanned(cards)
-      setScanInfo({ total, at: Date.now(), series: scanEra })
+      setCache({
+        cards,
+        info: {
+          total, at: Date.now(), series: scanEra, freePages, pages, count,
+          setsCovered, setsTotal,
+        },
+      })
       // Results are already one era, so the post-scan narrowing would only
       // repeat the choice just made.
       setEra('all')
@@ -257,6 +271,24 @@ export default function ScreenerPanel({
             <span className="small muted">
               {scanned.length} scanned · {withComps} with PSA 10 comps ·{' '}
               {result.matched} pass filters
+              {/* Says outright what the scan cost, so it is clear when someone
+                  else's earlier scan paid for it. */}
+              {scanInfo?.pages > 0 && (
+                <>
+                  {' · '}
+                  {scanInfo.freePages === scanInfo.pages ? (
+                    <span style={{ color: 'var(--good, #3fb950)' }}>
+                      free, already cached
+                    </span>
+                  ) : scanInfo.freePages > 0 ? (
+                    <span>
+                      {scanInfo.freePages} of {scanInfo.pages} pages were cached
+                    </span>
+                  ) : (
+                    <span>freshly fetched</span>
+                  )}
+                </>
+              )}
             </span>
           </div>
 
@@ -270,6 +302,16 @@ export default function ScreenerPanel({
                 {' '}— graded Pokémon cards rarely trade more than a few times a week,
                 so a high bar can exclude everything.
               </span>
+            </p>
+          )}
+
+          {/* A budget too small to reach every set covers fewer sets properly
+              rather than all of them thinly, so say which -- otherwise this
+              reads as "the whole era" when it is the newest part of it. */}
+          {scanInfo?.setsTotal > 0 && scanInfo.setsCovered < scanInfo.setsTotal && (
+            <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
+              Covered the {scanInfo.setsCovered} newest {scanInfo.series} sets of{' '}
+              {scanInfo.setsTotal} — the rest need a larger scan.
             </p>
           )}
 
