@@ -307,6 +307,78 @@ export async function searchCards({ q, limit = 6, withGraded = false, language =
 }
 
 /**
+ * Pages through a price band collecting cards with their graded sale data, for
+ * ranking by grading return rather than looking up something already known.
+ *
+ * A price band is used because the API requires at least one filter -- there is
+ * no "list everything" -- and price is the only filter that spans sets.
+ *
+ * Everything the ranking needs (graded prices, sales volume) lives inside the
+ * ebay payload, which is charged per card. So there is no way to narrow the
+ * field before paying for it: the scan fetches the pool, then filters locally.
+ * That makes it the most expensive thing in the app, hence the explicit page
+ * budget and the progress callback.
+ *
+ * Pages are 100 rather than the documented 200: asking for more still returns
+ * 100 once ebay data is included.
+ */
+export async function scanMarket({
+  minPrice = 1, maxPrice = 1000000, count = 100, language = 'english', onProgress, shouldStop,
+} = {}) {
+  const PAGE = 100
+  const pages = Math.max(1, Math.ceil(count / PAGE))
+  const out = []
+  let usage = null
+  let total = null
+
+  for (let i = 0; i < pages; i++) {
+    if (shouldStop?.()) break
+
+    // Last page is trimmed to the requested count so asking for 25 costs 25
+    // cards' worth of credits rather than a full page.
+    const want = Math.min(PAGE, count - out.length)
+    if (want <= 0) break
+
+    const params = new URLSearchParams({
+      minPrice: String(minPrice),
+      maxPrice: String(maxPrice),
+      limit: String(want),
+      offset: String(i * PAGE),
+      includeEbay: 'true',
+      // Most valuable first. Cards worth grading cluster at the top, and a
+      // thinly-traded $2 common would fail the volume test anyway.
+      sortBy: 'price',
+      sortOrder: 'desc',
+    })
+    if (language && language !== 'english') params.set('language', language)
+
+    const res = await request(`/cards?${params}`)
+    usage = res.usage || usage
+    total = res.json?.metadata?.total ?? total
+
+    const batch = res.json?.data || []
+    for (const c of batch) {
+      out.push({
+        ...slimCard(c),
+        language,
+        velocity: c.ebay?.salesVelocity || null,
+        totalSales: c.ebay?.totalSales ?? 0,
+        salesFrom: c.ebay?.dateRangeStart || null,
+        salesTo: c.ebay?.dateRangeEnd || null,
+      })
+    }
+
+    onProgress?.({ scanned: out.length, page: i + 1, pages, total, usage })
+
+    // A short page means the band is exhausted; asking for more just burns
+    // credits returning nothing.
+    if (batch.length < want) break
+  }
+
+  return { cards: out, usage, total }
+}
+
+/**
  * One card by TCGplayer product id. With `withGraded` this is 2 credits and
  * returns raw price plus every graded sale average in a single call, which is
  * how cards get added.

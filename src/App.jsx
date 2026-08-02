@@ -56,6 +56,7 @@ import StatsBar from './components/StatsBar'
 import SearchPanel from './components/SearchPanel'
 import BacklogTable from './components/BacklogTable'
 import SettingsPanel from './components/SettingsPanel'
+import ScreenerPanel from './components/ScreenerPanel'
 
 const DEFAULT_SETTINGS = {
   shipmentSize: '20',
@@ -437,6 +438,53 @@ export default function App() {
     setSubmissions((prev) => prev.filter((s) => s.id !== id))
   }, [setCards, setSubmissions])
 
+  // Which cards the screener should show as already owned. Keyed on TCGplayer
+  // id rather than printing, so a card you hold in any printing reads as added.
+  const ownedIds = useMemo(
+    () => new Set(cards.map((c) => String(c.tcgPlayerId))),
+    [cards]
+  )
+
+  /**
+   * Adds a screener result straight to the backlog.
+   *
+   * No API call: the scan already paid for this card's price and graded data,
+   * so re-fetching it would charge twice for what is already in hand.
+   */
+  const addScanned = useCallback((s) => {
+    const psa = s.graded?.byCompany?.PSA || {}
+    const printing = s.printings?.[0]
+    setCards((prev) => [
+      {
+        id: uid(),
+        tcgPlayerId: String(s.tcgPlayerId),
+        pptId: s.pptId,
+        language: s.language || 'english',
+        name: s.name,
+        setName: s.setName,
+        number: s.number,
+        rarity: s.rarity,
+        image: s.image,
+        printing: printing?.printing || 'Normal',
+        condition: printing?.condition || 'Near Mint',
+        rawPrice: printing?.price ?? s.marketPrice,
+        priceUpdatedAt: s.lastUpdated,
+        qty: 1,
+        declaredValue: '',
+        tierId: null,
+        targetGrade: DEFAULT_TARGET_GRADE,
+        submissionId: null,
+        notes: '',
+        gradedPrices: Object.fromEntries(Object.entries(psa).map(([g, v]) => [g, v.price])),
+        gradedMeta: psa,
+        gradedAll: s.graded?.byCompany || {},
+        gradedFetchedAt: Date.now(),
+        addedAt: Date.now(),
+      },
+      ...prev,
+    ])
+  }, [setCards])
+
   // A card's real batch size drives which tiers it qualifies for.
   const sizeFor = useCallback(
     (card) => (card.submissionId ? submissionUnits(card.submissionId, cards) : undefined),
@@ -727,6 +775,7 @@ export default function App() {
           {[
             ['backlog', 'Backlog'],
             ['submissions', `Submissions${submissions.length ? ` (${submissions.length})` : ''}`],
+            ['find', 'Find cards'],
             ['settings', 'Settings'],
           ].map(([id, label]) => (
             <button key={id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>
@@ -967,6 +1016,17 @@ export default function App() {
           onGoToBacklog={() => setTab('backlog')}
           focusId={focusSubmission}
           onFocused={() => setFocusSubmission(null)}
+        />
+      )}
+
+      {tab === 'find' && (
+        <ScreenerPanel
+          tiers={tiers}
+          settings={settings}
+          owned={ownedIds}
+          onAdd={addScanned}
+          onUsage={handleUsage}
+          onError={reportError}
         />
       )}
 

@@ -505,6 +505,130 @@ export function analyzeCard(card, tiers, settings, submissionSize) {
   }
 }
 
+/**
+ * Weekly sale rate, both ways the data supports measuring it.
+ *
+ * `recent` is the provider's own last-30-days figure. `overWindow` is the rate
+ * across the whole tracked period. They diverge a lot -- a card that sold
+ * steadily for months and has since gone quiet reads high on one and near zero
+ * on the other -- so both are kept and shown rather than blended into a single
+ * number that hides which situation you are looking at.
+ */
+export function weeklySales(scanned) {
+  const recent = scanned?.velocity?.weeklyAverage ?? null
+
+  let overWindow = null
+  const weeks = trackedWeeks(scanned)
+  if (weeks && scanned.totalSales != null) overWindow = scanned.totalSales / weeks
+
+  return { recent, overWindow }
+}
+
+function trackedWeeks(scanned) {
+  const from = scanned?.salesFrom ? Date.parse(scanned.salesFrom) : null
+  const to = scanned?.salesTo ? Date.parse(scanned.salesTo) : null
+  if (!from || !to || to <= from) return null
+  return Math.max((to - from) / (7 * 24 * 3600 * 1000), 1)
+}
+
+/**
+ * How often one specific grade actually trades, per week.
+ *
+ * This is the number that says whether a graded price can be trusted, and it
+ * is not the same as the card's overall sales rate: a card can sell constantly
+ * as a raw single while its PSA 10 has changed hands three times all year. It
+ * is the PSA 10 market being thin, not the card, that makes a PSA 10 price
+ * meaningless -- so the liquidity test has to be per grade.
+ */
+export function gradeSalesPerWeek(scanned, meta) {
+  const weeks = trackedWeeks(scanned)
+  if (!weeks || meta?.count == null) return null
+  return meta.count / weeks
+}
+
+/**
+ * Ranks scanned cards by return on grading.
+ *
+ * Two guards matter more than the ranking itself, because sorting by return
+ * puts the worst data at the top by construction -- a nonsense graded price is
+ * indistinguishable from a great opportunity once it is a single number:
+ *
+ *   - a grade with almost no sales is an average of noise, so `minSales` sets
+ *     a floor on how many sales the graded price rests on;
+ *   - a graded price far above that grade's own median is nearly always a
+ *     mis-scraped lot or bundle sale, so those are flagged rather than trusted.
+ *     One card in the sample showed a $2,006 "PSA 10" against a $294 median.
+ */
+export function screenMarket(scanned, tiers, settings, {
+  minWeekly = 0, minSales = 3, targetGrade = 10, limit = 25, outlierMultiple = 3,
+  maxRawMultiple = 20,
+} = {}) {
+  const rows = []
+
+  for (const s of scanned) {
+    const psa = s.graded?.byCompany?.PSA
+    const meta = psa?.[String(targetGrade)]
+    if (!meta) continue
+
+    const raw = s.marketPrice ?? s.printings?.[0]?.price ?? null
+    if (!raw || raw <= 0) continue
+
+    // Filtered on how often this grade trades, not how often the card does.
+    // A thin PSA 10 market is what makes a PSA 10 price unreliable.
+    const gradeRate = gradeSalesPerWeek(s, meta)
+    if ((gradeRate ?? 0) < minWeekly) continue
+    if ((meta.count ?? 0) < minSales) continue
+
+    const volume = weeklySales(s)
+
+    const card = {
+      qty: 1,
+      rawPrice: raw,
+      targetGrade,
+      gradedPrices: Object.fromEntries(Object.entries(psa).map(([g, v]) => [g, v.price])),
+      gradedMeta: psa,
+    }
+    const a = analyzeCard(card, tiers, settings, Math.max(1, num(settings.shipmentSize) || 1))
+    if (a.gradedPrice == null || a.roiNet == null) continue
+
+    /*
+      Flagged, not dropped: sometimes the outlier is real, and silently
+      discarding cards would make the list look thinner than the data is.
+
+      The multiple check catches a class the median check cannot. A card whose
+      raw price is $450 while its PSA 10 sits at $38,000 has an internally
+      consistent graded price -- median and average agree -- so nothing looks
+      wrong grade-side. What is wrong is the raw price: at a 90x multiple it is
+      not describing a copy anyone could buy and grade. Ranking by return puts
+      exactly these at the top, so they need saying out loud.
+    */
+    const reasons = []
+    if (meta.median != null && a.gradedPrice > meta.median * outlierMultiple) {
+      reasons.push(
+        `The PSA 10 price of ${money(a.gradedPrice)} is more than ${outlierMultiple}x this ` +
+        `grade's median of ${money(meta.median)}, which usually means a lot or bundle sale ` +
+        `was scraped as a single card.`
+      )
+    }
+    if (a.multiple != null && a.multiple > maxRawMultiple) {
+      reasons.push(
+        `Graded is ${Math.round(a.multiple)}x the raw price. A multiple that large usually ` +
+        `means the raw price is not for a gradeable copy -- a damaged listing, a different ` +
+        `printing, or a stale quote -- rather than a real opportunity.`
+      )
+    }
+
+    rows.push({
+      scanned: s, analysis: a, volume, gradeRate, meta,
+      suspect: reasons.length > 0,
+      reasons,
+    })
+  }
+
+  rows.sort((x, y) => y.analysis.roiNet - x.analysis.roiNet)
+  return { rows: rows.slice(0, limit), matched: rows.length }
+}
+
 function verdictFor(uplift, gradedPrice) {
   if (gradedPrice == null) return 'unknown'
   if (uplift == null) return 'unknown'
