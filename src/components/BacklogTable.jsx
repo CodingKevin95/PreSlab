@@ -509,7 +509,7 @@ function Row({
               </div>
 
               <div className="detail">
-                <label>PSA comps</label>
+                <label>PSA Target Comps</label>
                 {card.gradedPrices && Object.keys(card.gradedPrices).length > 0 ? (
                   <>
                     <div className="grade-grid">
@@ -532,14 +532,22 @@ function Row({
                               key={g}
                               className={'grade' + (Number(g) === a.targetGrade ? ' sel' : '')}
                               onClick={() => onPatch({ targetGrade: Number(g) })}
+                              /* The click hint is appended rather than used as
+                                 a fallback: it used to appear only on tiles
+                                 with no data, so in the normal case nothing
+                                 said these were selectable at all. */
                               title={
-                                meta
+                                (meta
                                   ? `${resolved ? resolved.label : 'Average'} · ` +
                                     `${meta.count} eBay sale${meta.count === 1 ? '' : 's'}` +
                                     (differs ? ` · all sales average ${money(flat)}` : '') +
                                     (meta.median ? ` · median ${money(meta.median)}` : '') +
-                                    (meta.lastSale ? ` · last ${new Date(meta.lastSale).toLocaleDateString()}` : '')
-                                  : 'Use this grade as the target'
+                                    (meta.lastSale ? ` · last ${new Date(meta.lastSale).toLocaleDateString()}` : '') +
+                                    '\n'
+                                  : '') +
+                                (Number(g) === a.targetGrade
+                                  ? 'This is your target grade.'
+                                  : 'Click to make this your target grade.')
                               }
                             >
                               <div className="g">PSA {g}</div>
