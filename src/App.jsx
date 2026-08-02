@@ -279,7 +279,6 @@ export default function App() {
         withGraded: true,
         language: card.language || 'english',
         fallbackQuery: lookupQuery(card),
-        language: card.language || 'english',
       })
       if (usage) handleUsage(usage)
 

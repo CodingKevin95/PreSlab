@@ -23,17 +23,21 @@ const PASS_THROUGH = [
 ]
 
 export default async function handler(req, res) {
-  const segments = Array.isArray(req.query.path) ? req.query.path : [req.query.path]
-  const path = '/' + segments.filter(Boolean).join('/')
+  /**
+   * Taken from req.url rather than the catch-all route parameter.
+   *
+   * Reading req.query.path depends on how the runtime populates dynamic
+   * segments, and when that came back empty the forwarded URL collapsed to the
+   * API root and the upstream answered "Not found". The raw URL is
+   * unambiguous, and passing the query string through verbatim also avoids
+   * re-encoding differences.
+   */
+  const rawUrl = req.url || ''
+  const qIndex = rawUrl.indexOf('?')
+  const rawPath = qIndex === -1 ? rawUrl : rawUrl.slice(0, qIndex)
+  const qs = qIndex === -1 ? '' : rawUrl.slice(qIndex + 1)
 
-  // Rebuild the query string without the catch-all route parameter.
-  const params = new URLSearchParams()
-  for (const [k, v] of Object.entries(req.query)) {
-    if (k === 'path') continue
-    if (Array.isArray(v)) v.forEach((x) => params.append(k, x))
-    else params.append(k, v)
-  }
-  const qs = params.toString()
+  const path = rawPath.replace(/^\/api\/tcg/, '') || '/'
 
   // A visitor's own key takes precedence over the shared one, so bringing your
   // own key lifts you off this deployment's quota.
