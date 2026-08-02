@@ -192,7 +192,18 @@ async function request(path, { retried = false } = {}) {
     throw new ApiError(msg, { status: res.status })
   }
 
-  return { json, usage }
+  /**
+   * A CDN hit never reached the API, so it spent no credits and its usage
+   * headers are frozen at whatever was true when the response was first
+   * stored. Reporting them would rewind the credit meter to a stale number and
+   * make it look like credits came back.
+   *
+   * Only success responses are cacheable, so the error paths above still see
+   * real usage -- a 429 is never a cache hit.
+   */
+  const cdnHit = (res.headers.get('x-vercel-cache') || '').toUpperCase() === 'HIT'
+
+  return { json, usage: cdnHit ? null : usage, cdnHit }
 }
 
 function numOrNull(v) {

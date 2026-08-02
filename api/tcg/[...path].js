@@ -137,6 +137,31 @@ export default async function handler(req, res) {
     }
   }
 
+  /**
+   * Cached at the CDN so identical lookups are answered without calling
+   * upstream at all -- and therefore without spending credits.
+   *
+   * This is what makes the deployment shareable. Card prices are public and
+   * identical for everyone, so the per-visitor browser cache was re-buying the
+   * same data for each person: ten testers looking up the same card cost ten
+   * times what one did. Cached here instead, the first request pays and the
+   * rest are free, including for visitors using their own key.
+   *
+   * Six hours matches the client-side cache, so both layers age out together
+   * rather than one serving data the other considers stale.
+   *
+   * Errors are never cached: a rate-limit or an outage would otherwise be
+   * pinned in front of a working API for hours.
+   */
+  if (upstream.ok) {
+    res.setHeader(
+      'cache-control',
+      'public, s-maxage=21600, stale-while-revalidate=86400'
+    )
+  } else {
+    res.setHeader('cache-control', 'no-store')
+  }
+
   res.status(upstream.status)
   res.setHeader('content-type', upstream.headers.get('content-type') || 'application/json')
   res.send(body)
