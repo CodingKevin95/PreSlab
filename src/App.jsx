@@ -1027,6 +1027,7 @@ export default function App() {
           onAdd={addScanned}
           onUsage={handleUsage}
           onError={reportError}
+          onGoToSettings={() => setTab('settings')}
         />
       )}
 

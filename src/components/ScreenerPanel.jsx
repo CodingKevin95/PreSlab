@@ -14,7 +14,9 @@ import { screenMarket, money, percent } from '../lib/psa'
  * changing a threshold re-filters what was already paid for instead of
  * scanning again.
  */
-export default function ScreenerPanel({ tiers, settings, onAdd, onUsage, onError, owned }) {
+export default function ScreenerPanel({
+  tiers, settings, onAdd, onUsage, onError, owned, onGoToSettings,
+}) {
   const [minPrice, setMinPrice] = useState('1')
   const [maxPrice, setMaxPrice] = useState('1000000')
   const [count, setCount] = useState(50)
@@ -89,7 +91,7 @@ export default function ScreenerPanel({ tiers, settings, onAdd, onUsage, onError
           <div style={{ width: 150 }}>
             <label className="small muted">Cards to scan</label>
             <select value={count} onChange={(e) => setCount(Number(e.target.value))}>
-              {[25, 50, 100, 200, 500].map((n) => (
+              {[25, 50, 100, 200, 500, 1000].map((n) => (
                 <option key={n} value={n}>{n} cards</option>
               ))}
             </select>
@@ -186,6 +188,32 @@ export default function ScreenerPanel({ tiers, settings, onAdd, onUsage, onError
             </p>
           )}
 
+          {/* The returns for these are overstated, and scanning most-valuable
+              -first makes them common rather than rare, so this cannot be left
+              to a tooltip on the row. */}
+          {rows.some((r) => r.noTier) && (
+            <p className="small" style={{ marginTop: 10, marginBottom: 0, color: '#d9a441' }}>
+              {rows.filter((r) => r.noTier).length} of these are worth more than your
+              highest grading tier covers, so they are costed as though grading were
+              free and their ROI is too high.{' '}
+              <button className="ghost small" onClick={onGoToSettings}>
+                Add higher tiers
+              </button>
+            </p>
+          )}
+
+          {/* Fewer results than asked for is nearly always too small a scan
+              rather than a thin market, so say so with the actual arithmetic
+              instead of leaving a short list unexplained. */}
+          {rows.length > 0 && rows.length < 25 && (
+            <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
+              {rows.length} of 25 — only {scanned.length} cards were scanned, and about{' '}
+              {Math.round((result.matched / scanned.length) * 100)}% pass your filters.
+              Scanning about {Math.min(2000, Math.max(50, Math.ceil(25 / Math.max(result.matched / scanned.length, 0.01) / 25) * 25))} cards
+              would fill the list.
+            </p>
+          )}
+
           {/* Every match hidden as implausible would otherwise render an empty
               page with no explanation of where the results went. */}
           {result.matched > 0 && rows.length === 0 && (
@@ -222,7 +250,7 @@ export default function ScreenerPanel({ tiers, settings, onAdd, onUsage, onError
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ scanned: s, analysis: a, volume, gradeRate, meta, suspect, reasons }) => {
+              {rows.map(({ scanned: s, analysis: a, volume, gradeRate, meta, suspect, reasons, noTier }) => {
                 const already = owned.has(String(s.tcgPlayerId))
                 return (
                   <tr key={s.tcgPlayerId}>
@@ -249,7 +277,22 @@ export default function ScreenerPanel({ tiers, settings, onAdd, onUsage, onError
                       </div>
                     </td>
                     <td className="num">{money(a.raw)}</td>
-                    <td className="small">{a.tier ? a.tier.name : '—'}</td>
+                    <td className="small">
+                      {a.tier ? (
+                        a.tier.name
+                      ) : (
+                        <span
+                          style={{ color: '#d9a441' }}
+                          title={
+                            `No tier covers a declared value of ${money(a.declared)}. Your highest ` +
+                            `tier stops below it, so this card is costed as though grading were ` +
+                            `free and the return below is too high. Add the tier in Settings.`
+                          }
+                        >
+                          ⚠ no tier
+                        </span>
+                      )}
+                    </td>
                     <td className="num">
                       {money(a.gradedPrice)}
                       <div className="small muted">

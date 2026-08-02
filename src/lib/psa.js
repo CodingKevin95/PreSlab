@@ -618,8 +618,19 @@ export function screenMarket(scanned, tiers, settings, {
       )
     }
 
+    /*
+      Kept separate from `suspect` deliberately.
+
+      A card above the highest configured tier has no fee to charge, so it is
+      costed as though grading were free and its return comes out too high.
+      That is a gap in the tier table rather than bad market data, and it is
+      fixable in Settings -- so it is surfaced as its own thing rather than
+      hidden alongside implausible prices. Hiding it would also empty the list,
+      since scanning most-valuable-first finds these cards first.
+    */
     rows.push({
       scanned: s, analysis: a, volume, gradeRate, meta,
+      noTier: a.tierMissing,
       suspect: reasons.length > 0,
       reasons,
     })
