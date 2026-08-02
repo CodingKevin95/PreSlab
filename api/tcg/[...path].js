@@ -55,6 +55,33 @@ export default async function handler(req, res) {
     })
     .join('&')
 
+  /**
+   * Market scanning is off on the deployed site.
+   *
+   * It is by far the most expensive thing the app does -- hundreds of cards at
+   * two credits each, against a shared daily allowance -- so it stays local
+   * until that cost is worked out.
+   *
+   * Enforced here rather than only by hiding the tab, because a hidden button
+   * does not stop anyone calling the endpoint directly, and the whole point is
+   * to protect the key rather than tidy the UI. The dev server has its own
+   * relay and is unaffected.
+   *
+   * Recognised by the filters only a scan uses: single-card lookups go by
+   * tcgPlayerId and searches by search, neither of which is matched here.
+   * Set ENABLE_MARKET_SCAN=true in the deployment to turn it back on.
+   */
+  if (/[?&](setId|minPrice)=/.test(rawUrl) && process.env.ENABLE_MARKET_SCAN !== 'true') {
+    res.setHeader('cache-control', 'no-store')
+    res.status(403).json({
+      error:
+        'Market scanning is turned off on this deployment. Everything else — ' +
+        'search, adding cards, refreshing prices — works normally.',
+      code: 'SCAN_DISABLED',
+    })
+    return
+  }
+
   // A visitor's own key takes precedence over the shared one, so bringing your
   // own key lifts you off this deployment's quota.
   const visitorKey = req.headers['x-user-api-key']

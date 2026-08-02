@@ -58,6 +58,16 @@ import BacklogTable from './components/BacklogTable'
 import SettingsPanel from './components/SettingsPanel'
 import ScreenerPanel from './components/ScreenerPanel'
 
+/**
+ * Whether market scanning is offered.
+ *
+ * Kept to local development while its credit cost is being worked out. This
+ * only hides the tab -- the relay refuses scan requests independently, since a
+ * hidden button is not a control.
+ */
+const SCAN_ENABLED = typeof window !== 'undefined'
+  && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname)
+
 const DEFAULT_SETTINGS = {
   shipmentSize: '20',
   priceBasis: 'smart',
@@ -779,9 +789,9 @@ export default function App() {
           {[
             ['backlog', 'Backlog'],
             ['submissions', `Submissions${submissions.length ? ` (${submissions.length})` : ''}`],
-            ['find', 'Find cards'],
+            ...(SCAN_ENABLED ? [['find', 'Find cards']] : []),
             ['settings', 'Settings'],
-          ].map(([id, label]) => (
+          ].filter(Boolean).map(([id, label]) => (
             <button key={id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>
               {label}
             </button>
@@ -1023,7 +1033,7 @@ export default function App() {
         />
       )}
 
-      {tab === 'find' && (
+      {tab === 'find' && SCAN_ENABLED && (
         <ScreenerPanel
           tiers={tiers}
           settings={settings}
