@@ -230,7 +230,16 @@ export default function App() {
   // it is the response that tells us the credits are actually gone.
   const reportError = useCallback((err) => {
     if (err?.usage) handleUsage(err.usage)
-    setError(typeof err === 'string' ? err : err?.message || String(err))
+
+    // Callers pass null to clear the banner before starting work. Coercing
+    // that to a string put a literal "null" on screen after a search that had
+    // actually succeeded, so treat it -- and an empty message -- as a clear.
+    if (err == null) {
+      setError(null)
+      return
+    }
+    const msg = typeof err === 'string' ? err : err?.message || String(err)
+    setError(msg.trim() ? msg : null)
   }, [handleUsage])
 
   const patchCard = useCallback((id, patch) => {
