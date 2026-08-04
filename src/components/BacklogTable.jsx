@@ -154,6 +154,18 @@ function CostBasis({ card, a, onPatch }) {
               {money(a.lineProfit)} ({percent(a.profitRoi)})
             </span>
           </div>
+          {/* Without a purchase price this falls back to market value, which
+              makes it the same sum as the column beside it. Two panels showing
+              one number look broken unless the reason is stated. */}
+          {!a.hasCost && (
+            <div className="muted small calc-note" style={{ marginTop: 6 }}>
+              <span>
+                Enter what you paid to see your real profit — until then this
+                assumes market price, so it matches the column on the left.
+              </span>
+              <span />
+            </div>
+          )}
         </div>
       ) : (
         <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
@@ -585,7 +597,14 @@ function Row({
               </div>
 
               <div className="detail">
-                <label>The math</label>
+                {/* "The math" said nothing about which maths. These two columns
+                    differ only in what the card is costed at -- market value
+                    versus what was actually paid -- so each heading names its
+                    own baseline rather than leaving it to be worked out. */}
+                <label>Grade or sell raw?</label>
+                <p className="small muted" style={{ margin: '0 0 8px' }}>
+                  Costed at today's raw value. Ignores what you paid.
+                </p>
 
                 {a.gradedPrice == null ? (
                   <div className="calc">
@@ -604,9 +623,8 @@ function Row({
                   <div className="calc">
                     {/* Built up line by line so every deduction is visible and
                         the figures add up to the total on screen. */}
-                    <div className="calc-head">
-                      <span>Grade it and sell</span><span />
-                    </div>
+                    {/* The column heading already says this is the grade-and-sell
+                        case, so a second header repeating it was just noise. */}
                     <div>
                       <span>PSA {a.targetGrade} sells for</span>
                       <span>{money(a.gradedPrice)}</span>
@@ -682,7 +700,10 @@ function Row({
               </div>
 
               <div className="detail">
-                <label>What you paid</label>
+                <label>What this copy made you</label>
+                <p className="small muted" style={{ margin: '0 0 8px' }}>
+                  Costed at what you actually paid.
+                </p>
                 <CostBasis card={card} a={a} onPatch={onPatch} />
               </div>
 
