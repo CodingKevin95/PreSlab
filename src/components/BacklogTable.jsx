@@ -244,15 +244,15 @@ export default function BacklogTable({
               <th className="num qty-col" title="How many copies of this exact card you own">Qty</th>
               <th>Status</th>
               <th
-                className="num"
+                className="num grp"
                 title="Average of what you paid per copy. Copies you haven't priced count at market value."
               >
                 Paid ea.
               </th>
               <th className="num" title="Raw market value of one copy">Raw value</th>
-              <th title="Chosen from the declared value, which defaults to the expected graded price">Tier</th>
+              <th className="grp" title="Chosen from the declared value, which defaults to the expected graded price">Tier</th>
               <th>Target</th>
-              <th className="num" title="Value of one copy at the target grade">Graded value</th>
+              <th className="num grp" title="Value of one copy at the target grade">Graded value</th>
               <th
                 className="num"
                 title="Net gain on one copy versus selling it raw, with ROI beneath. Totals are in the summary above."
@@ -385,7 +385,7 @@ function Row({
           <span className={'pill ' + status.id} title={status.hint}>{status.label}</span>
         </td>
         <td
-          className="num"
+          className="num grp"
           title={
             a.assumedCount > 0
               ? `${a.assumedCount} of ${a.qty} assumed at market value — set them in the expanded row`
@@ -397,7 +397,7 @@ function Row({
           <span className={a.hasCost ? '' : 'muted'}>{money(a.paidEach)}</span>
         </td>
         <td className="num">{money(a.raw)}</td>
-        <td>
+        <td className="grp">
           <select
             className="mini"
             value={card.tierId || ''}
@@ -433,7 +433,7 @@ function Row({
             ))}
           </select>
         </td>
-        <td className="num">
+        <td className="num grp">
           {a.gradedPrice != null ? (
             <>
               {money(a.gradedPrice)}
@@ -471,8 +471,11 @@ function Row({
             </span>
           )}
         </td>
+        {/* Held back against the column beside it. This is the gain before
+            fees, which is never what you actually receive, so it should not
+            compete with the figure that is. */}
         <td
-          className={'num verdict ' + a.verdict}
+          className={'num verdict second ' + a.verdict}
           title={
             a.roi != null
               ? `${money(a.uplift)} back on ${money(a.raw + a.gradingCost)} tied up per copy`

@@ -13,7 +13,39 @@
   --warn: #d29922;
   --bad: #f85149;
   --radius: 10px;
+
+  /* One spacing scale. Padding and gaps had drifted across 5, 6, 7, 9, 10, 12,
+     13, 14, 16, 18, 20 and 22px, which is what makes a dense layout feel noisy
+     -- nothing lines up with anything else. */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+
+  /* Divider weights, weakest to strongest. Row rules sit at the bottom so a
+     long table reads as rows of data rather than a grid of boxes. */
+  --rule-faint: #1a2029;
+  --rule: #1f2632;
+
   color-scheme: dark;
+}
+
+/* Every small uppercase label in the app -- table headers, stat captions,
+   detail headings, calc section heads. They had four slightly different sizes
+   and letter-spacings, so the same kind of label looked subtly different
+   depending on where it appeared. */
+.micro,
+.stat .k,
+.detail label,
+.tier-row .hd,
+.calc .calc-head span:first-child,
+.scen-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--dim);
+  font-weight: 600;
 }
 
 * { box-sizing: border-box; }
@@ -73,11 +105,11 @@ select.mini { padding: 4px 26px 4px 8px; }
 
 /* ---------- layout ---------- */
 
-.app { max-width: 1360px; margin: 0 auto; padding: 20px 22px 80px; }
+.app { max-width: 1360px; margin: 0 auto; padding: var(--sp-5) var(--sp-5) 80px; }
 
 .topbar {
   display: flex; align-items: center; gap: 14px;
-  padding-bottom: 16px; margin-bottom: 18px;
+  padding-bottom: var(--sp-4); margin-bottom: var(--sp-4);
   border-bottom: 1px solid var(--line-soft);
 }
 .brand { font-size: 17px; font-weight: 650; letter-spacing: -.2px; }
@@ -95,24 +127,23 @@ select.mini { padding: 4px 26px 4px 8px; }
   background: var(--panel);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 .panel h2 { margin: 0 0 4px; font-size: 14px; font-weight: 650; }
 .panel .sub { color: var(--dim); font-size: 12.5px; margin: 0 0 14px; }
 
-.row { display: flex; gap: 10px; align-items: center; }
+.row { display: flex; gap: var(--sp-2); align-items: center; }
 .row.wrap { flex-wrap: wrap; }
 .grow { flex: 1; min-width: 0; }
 
 /* ---------- stats ---------- */
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--sp-2); }
 .stat {
   background: var(--panel); border: 1px solid var(--line-soft);
-  border-radius: var(--radius); padding: 12px 14px;
+  border-radius: var(--radius); padding: var(--sp-3) var(--sp-3);
 }
-.stat .k { color: var(--dim); font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; }
 .stat .v { font-size: 21px; font-weight: 650; margin-top: 5px; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
 .stat .n { color: var(--dimmer); font-size: 11.5px; margin-top: 3px; }
 .stat .v.good { color: var(--good); }
@@ -141,10 +172,7 @@ select.mini { padding: 4px 26px 4px 8px; }
 }
 .scen-row:last-child { border-bottom: none; }
 .scen-row span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.scen-head {
-  font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
-  color: var(--dim); font-weight: 600;
-}
+/* Typography comes from the shared .micro rule near the top. */
 
 /* ---------- table ---------- */
 
@@ -175,10 +203,20 @@ th {
   top: 0;
   z-index: 2;
   background: var(--panel);
-  box-shadow: inset 0 -1px 0 var(--line);
+  box-shadow: inset 0 -1px 0 var(--rule);
 }
 th.num, td.num { text-align: right; }
-td { padding: 8px 6px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+td {
+  padding: var(--sp-2) 6px;
+  border-bottom: 1px solid var(--rule-faint);
+  vertical-align: middle;
+}
+
+/* Marks where one kind of information ends and the next begins: what the card
+   costs, what grading it costs, what it comes back worth. Thirteen evenly
+   spaced columns read as one long undifferentiated strip, and the eye has
+   nothing to anchor to when scanning across a row. */
+th.grp, td.grp { border-left: 1px solid var(--rule); }
 
 /* The card cell collapses to nothing once enough columns compete for width,
    wrapping the name over four lines and making every row tall. Low enough that
@@ -189,7 +227,7 @@ th.card-col, td.card-col { min-width: 190px; }
 /* Narrow columns whose contents are always short. */
 th.qty-col, td.qty-col { width: 46px; }
 tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: #12171f; }
+tbody tr:hover { background: #151b25; }
 
 .cardname { font-weight: 550; }
 .cardmeta { color: var(--dimmer); font-size: 12px; margin-top: 2px; }
@@ -214,6 +252,12 @@ td.num .cardmeta { white-space: nowrap; }
 .verdict.marginal { color: var(--warn); }
 .verdict.negative { color: var(--bad); }
 .verdict.unknown { color: var(--dimmer); font-weight: 400; }
+
+/* Every figure being equally loud is why the table reads as a wall of numbers:
+   the one that answers "is this worth grading" looked the same as the one
+   before fees. Same hue so the positive/negative signal survives, held back so
+   the column that decides it carries the emphasis. */
+.verdict.second { opacity: .62; font-weight: 550; }
 
 .muted { color: var(--dimmer); }
 .small { font-size: 12px; }
@@ -280,9 +324,9 @@ td.num .cardmeta { white-space: nowrap; }
 .grade .p { font-weight: 650; margin-top: 3px; font-variant-numeric: tabular-nums; }
 
 .expand { background: #10151d; }
-.expand td { padding: 16px 14px; }
-.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
-.detail label { display: block; color: var(--dim); font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+.expand td { padding: var(--sp-4); }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-5); }
+.detail label { display: block; margin-bottom: var(--sp-2); }
 
 /* One price input per copy owned. Scrolls once a row holds a lot of them. */
 .copy-list {
@@ -310,19 +354,13 @@ td.num .cardmeta { white-space: nowrap; }
 
 /* Section label: names the option being priced, so the running lines beneath
    it read as one calculation instead of a flat list. */
-.calc .calc-head span:first-child {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  color: var(--dim);
-  font-weight: 600;
-}
+/* .calc-head typography comes from the shared .micro rule. */
 /* Provenance and secondary figures, stepped in so they read as annotations. */
 .calc .calc-note { padding-left: 10px; }
 .calc .calc-note span:first-child { color: var(--dimmer); }
 
 .tier-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 7px; }
-.tier-row .hd { color: var(--dim); font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; }
+/* .tier-row .hd typography comes from the shared .micro rule. */
 
 /* "in Submission 1" on a backlog row -- a link, not decoration. */
 .link-sub {

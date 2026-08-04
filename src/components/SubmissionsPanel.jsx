@@ -382,15 +382,15 @@ function Submission({
                   <th className="card-col">Card</th>
                   <th className="num qty-col">Qty</th>
                   <th
-                    className="num"
+                    className="num grp"
                     title="Average of what you paid per copy. Copies you haven't priced count at market value."
                   >
                     Paid ea.
                   </th>
                   <th className="num" title="Raw market value of one copy">Raw value</th>
-                  <th>Tier</th>
+                  <th className="grp">Tier</th>
                   <th>Target</th>
-                  <th className="num" title="Value of one copy at the target grade">Graded value</th>
+                  <th className="num grp" title="Value of one copy at the target grade">Graded value</th>
                   {/* Measured against what you paid, not market value: the
                       grade-or-sell decision is already made for these cards. */}
                   <th
@@ -427,7 +427,7 @@ function Submission({
                     </td>
                     <td className="num qty-col">{a.qty}</td>
                     <td
-                      className="num"
+                      className="num grp"
                       title={
                         a.assumedCount > 0
                           ? `${a.assumedCount} of ${a.qty} assumed at market value`
@@ -439,14 +439,14 @@ function Submission({
                       <span className={a.hasCost ? '' : 'muted'}>{money(a.paidEach)}</span>
                     </td>
                     <td className="num">{money(a.raw)}</td>
-                    <td>
+                    <td className="grp">
                       <span className="pill">{a.tier ? a.tier.name : 'none'}</span>
                     </td>
                     <td>PSA {a.targetGrade}</td>
-                    <td className="num">
+                    <td className="num grp">
                       {a.gradedPrice != null ? money(a.gradedPrice) : <span className="muted">—</span>}
                     </td>
-                    <td className={'num verdict ' + verdictOf(a.upliftVsPaid)}>
+                    <td className={'num verdict second ' + verdictOf(a.upliftVsPaid)}>
                       {a.upliftVsPaid != null ? money(a.upliftVsPaid) : '—'}
                       {a.roiVsPaid != null && (
                         <div className="cardmeta">{percent(a.roiVsPaid)}</div>
