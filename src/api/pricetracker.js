@@ -163,6 +163,7 @@ async function request(path, { retried = false } = {}) {
     // Set by the relay when running on the shared trial key. Absent when the
     // visitor has supplied their own.
     sharedLeft: numOrNull(res.headers.get('x-shared-credits-left')),
+    sharedPool: numOrNull(res.headers.get('x-shared-credits-pool')),
     keySource: res.headers.get('x-key-source') || null,
   }
 

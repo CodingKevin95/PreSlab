@@ -132,35 +132,44 @@ export default async function handler(req, res) {
   const body = await upstream.text()
 
   /**
-   * Cap on how much of the shared key visitors may spend, so trying the app
-   * out cannot drain the owner's daily allowance.
+   * Reserve the owner keeps for themselves. Visitors are served while the key
+   * still holds more than this, and cut off below it.
    *
-   * Derived from the upstream's own remaining-credit header rather than a
-   * counter here: serverless invocations share no memory, and a browser-side
-   * tally would reset the moment someone cleared their storage. This cannot be
-   * bypassed because the number comes from the API itself.
+   * Expressed as a floor rather than an allowance because there is nowhere to
+   * count visitors: serverless invocations share no memory, and a browser-side
+   * tally resets the moment someone clears their storage. The only number
+   * available is the key's own remaining credits, which counts every use of
+   * that key -- including the owner's, from anywhere.
    *
-   * Visitors using their own key are unaffected -- the cap exists to protect
-   * the shared one.
+   * Spending against an allowance therefore read the owner's own usage as
+   * visitor usage: a local scan of a few thousand cards exhausted a 2,000
+   * "visitor" budget without a single visitor. A floor cannot make that
+   * mistake, because it asks what is left rather than who spent it.
+   *
+   * Visitors using their own key are unaffected -- this protects the shared one.
    */
   if (!visitorKey) {
-    const budget = Number(process.env.SHARED_KEY_CREDITS || 2000)
+    const reserve = Number(process.env.SHARED_KEY_RESERVE || 12000)
     const limit = Number(upstream.headers.get('x-ratelimit-daily-limit'))
     const remaining = Number(upstream.headers.get('x-ratelimit-daily-remaining'))
 
-    if (Number.isFinite(limit) && Number.isFinite(remaining)) {
-      const spent = limit - remaining
-      if (spent >= budget) {
+    if (Number.isFinite(remaining)) {
+      if (remaining <= reserve) {
         res.status(429).json({
           error:
-            `The shared trial allowance of ${budget} lookups is used up for today. ` +
-            `Add your own free API key in Settings to keep going — you'll get your ` +
-            `own daily allowance and won't share it with anyone.`,
+            `This deployment's shared key is reserved for the owner for the rest of ` +
+            `today. Add your own free API key in Settings to keep going — you'll get ` +
+            `your own daily allowance and won't share it with anyone.`,
           code: 'SHARED_BUDGET_EXHAUSTED',
         })
         return
       }
-      res.setHeader('x-shared-credits-left', String(Math.max(0, budget - spent)))
+      res.setHeader('x-shared-credits-left', String(Math.max(0, remaining - reserve)))
+      // The pool the meter fills against. Sent rather than assumed, so changing
+      // the reserve does not leave the bar quietly misreporting.
+      if (Number.isFinite(limit)) {
+        res.setHeader('x-shared-credits-pool', String(Math.max(1, limit - reserve)))
+      }
     }
   }
 

@@ -750,6 +750,9 @@ export default function App() {
     ? usage.dailyLimit - usage.dailyRemaining
     : budget.used
   const pct = Math.min(100, (used / dailyLimit) * 100)
+  // Guarded against zero as well as absent: dividing the meter width by it
+  // would render NaN% and collapse the bar.
+  const sharedPool = usage?.sharedPool > 0 ? usage.sharedPool : 2000
 
   return (
     <div className="app">
@@ -761,16 +764,22 @@ export default function App() {
         <SaveState disk={disk} />
         {/* On the shared trial key the meaningful number is the trial
             allowance, not the account's whole daily quota. */}
+        {/* Falls back to the previous fixed allowance if the pool header is
+            absent, so an older cached response cannot divide by zero. */}
         {usage?.sharedLeft != null ? (
           <div
             className="budget"
-            title="Shared trial allowance. Add your own free key in Settings for your own daily quota."
+            title="Shared with everyone using this link, and stops at a reserve kept for the owner. Add your own free key in Settings for your own daily quota."
           >
-            <span>{usage.sharedLeft} trial lookups left</span>
+            <span>{usage.sharedLeft.toLocaleString()} shared lookups left</span>
             <div className="meter">
               <i
-                className={usage.sharedLeft < 100 ? 'bad' : usage.sharedLeft < 400 ? 'warn' : ''}
-                style={{ width: Math.min(100, (usage.sharedLeft / 2000) * 100) + '%' }}
+                className={
+                  usage.sharedLeft < sharedPool * 0.05
+                    ? 'bad'
+                    : usage.sharedLeft < sharedPool * 0.2 ? 'warn' : ''
+                }
+                style={{ width: Math.min(100, (usage.sharedLeft / sharedPool) * 100) + '%' }}
               />
             </div>
           </div>
