@@ -563,6 +563,18 @@ export async function getCard(tcgPlayerId, {
   // within its own language collection.
   if (language && language !== 'english') params.set('language', language)
 
+  /**
+   * Forces past the shared CDN copy, not just the one in this browser.
+   *
+   * The CDN keys on the URL, so without something to vary it a deliberate
+   * refresh was answered from cache and returned exactly the figures the user
+   * asked to replace -- silently, and for as long as the cached copy lived.
+   *
+   * The relay strips this before forwarding, since the upstream rejects
+   * parameters it does not recognise.
+   */
+  if (force) params.set('_fresh', String(Date.now()))
+
   const { json, usage } = await request(`/cards?${params}`)
   let first = (json.data || [])[0]
 

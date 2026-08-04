@@ -51,6 +51,10 @@ export default async function handler(req, res) {
     .filter((pair) => {
       if (!pair) return false
       const key = decodeURIComponent(pair.split('=')[0])
+      // `_fresh` exists purely to vary the URL so the CDN misses on a deliberate
+      // refresh. The upstream rejects any parameter it does not recognise, so
+      // it has to come off before forwarding -- same as the route parameter.
+      if (key === '_fresh') return false
       return !/^\.*path$/.test(key)
     })
     .join('&')
@@ -202,8 +206,16 @@ export default async function handler(req, res) {
       Single-card lookups keep the shorter window, since those are read one at
       a time against a decision to actually buy or send something.
     */
-    const isScan = /[?&](setId|minPrice)=/.test(rawUrl)
-    const maxAge = isScan ? 86400 : 21600
+    /*
+      A day for everything, so a card someone opened this morning is free for
+      everyone else all day. Prices here are graded sale averages over a window
+      of months and a raw market price that moves in small steps -- neither
+      changes enough within a day to be worth re-buying for every visitor.
+
+      A deliberate refresh escapes this by varying the URL with `_fresh`, which
+      is what keeps the Refresh button honest at this length.
+    */
+    const maxAge = 86400
     res.setHeader(
       'cache-control',
       `public, s-maxage=${maxAge}, stale-while-revalidate=${maxAge * 2}`
