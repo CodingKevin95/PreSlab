@@ -10,7 +10,7 @@ export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
   onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError,
-  focusId, onFocused,
+  completed, focusId, onFocused,
 }) {
   const [q, setQ] = useState('')
 
@@ -35,17 +35,29 @@ export default function SubmissionsPanel({
     return (
       <div className="panel">
         <div className="empty">
-          <p style={{ fontSize: 15, color: 'var(--dim)' }}>No submissions yet.</p>
-          <p>
-            Start one here and search for cards inside it, or go to <b>Backlog</b>,
-            tick what you want to send and choose <b>Add to submission</b>.
-          </p>
-          <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
-            {onNewSubmission && (
-              <button className="primary" onClick={onNewSubmission}>New submission</button>
-            )}
-            <button onClick={onGoToBacklog}>Open backlog</button>
-          </div>
+          {completed ? (
+            <>
+              <p style={{ fontSize: 15, color: 'var(--dim)' }}>Nothing completed yet.</p>
+              <p>
+                Set a submission to <b>Completed</b> once its cards are back with
+                grades. It moves here, keeping its cards, figures and export.
+              </p>
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: 15, color: 'var(--dim)' }}>No submissions yet.</p>
+              <p>
+                Start one here and search for cards inside it, or go to <b>Backlog</b>,
+                tick what you want to send and choose <b>Add to submission</b>.
+              </p>
+              <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
+                {onNewSubmission && (
+                  <button className="primary" onClick={onNewSubmission}>New submission</button>
+                )}
+                <button onClick={onGoToBacklog}>Open backlog</button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     )

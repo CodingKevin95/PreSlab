@@ -800,7 +800,7 @@ export default function App() {
           {[
             ['backlog', 'Backlog'],
             ['submissions', `Submissions${activeSubs.length ? ` (${activeSubs.length})` : ''}`],
-            ...(doneSubs.length ? [['completed', `Completed (${doneSubs.length})`]] : []),
+            ['completed', `Completed${doneSubs.length ? ` (${doneSubs.length})` : ''}`],
             ...(SCAN_ENABLED ? [['find', 'Find cards']] : []),
             ['settings', 'Settings'],
           ].filter(Boolean).map(([id, label]) => (
@@ -1058,6 +1058,7 @@ export default function App() {
 
       {tab === 'completed' && (
         <SubmissionsPanel
+          completed
           submissions={doneSubs}
           cards={cards}
           tiers={tiers}
