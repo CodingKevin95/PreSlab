@@ -756,8 +756,28 @@ export default function App() {
     }
   }
 
+  /**
+   * What the backlog is about: cards still in play.
+   *
+   * A card in a completed batch has been sent, graded and returned, so it is no
+   * longer a decision. Leaving it here padded the list with finished business
+   * and, worse, kept it in the totals -- Projected net counted profit on cards
+   * whose grades are already known.
+   *
+   * They are filtered from the view, not removed. The completed submission is
+   * still their record, and deleting that batch still returns them here.
+   */
+  const doneIds = useMemo(
+    () => new Set(submissions.filter(isCompleted).map((s) => s.id)),
+    [submissions]
+  )
+  const liveCards = useMemo(
+    () => cards.filter((c) => !c.submissionId || !doneIds.has(c.submissionId)),
+    [cards, doneIds]
+  )
+
   const visible = useMemo(() => {
-    let list = cards
+    let list = liveCards
     if (statusFilter !== 'all') list = list.filter((c) => statusOf(c) === statusFilter)
 
     // Every word must appear somewhere on the card, so "umbreon alt" and
@@ -793,8 +813,8 @@ export default function App() {
   }, [cards, statusFilter, query, sort, tiers, settings, sizeFor, submissions])
 
   const roll = useMemo(
-    () => rollUp(cards, tiers, settings, sizeFor),
-    [cards, tiers, settings, sizeFor]
+    () => rollUp(liveCards, tiers, settings, sizeFor),
+    [liveCards, tiers, settings, sizeFor]
   )
 
   const legacyCount = useMemo(() => cards.filter((c) => !c.tcgPlayerId).length, [cards])
