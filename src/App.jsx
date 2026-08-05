@@ -58,6 +58,7 @@ import SearchPanel from './components/SearchPanel'
 import BacklogTable from './components/BacklogTable'
 import SettingsPanel from './components/SettingsPanel'
 import ScreenerPanel from './components/ScreenerPanel'
+import HelpPanel from './components/HelpPanel'
 
 /**
  * Whether market scanning is offered.
@@ -179,6 +180,7 @@ export default function App() {
   // you switch tabs. Losing them meant re-running a scan that had already
   // been paid for, every time you looked away.
   const [screenerCache, setScreenerCache] = useState(null)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   // Carries a term into the always-visible search box, from the empty state or
   // from a filter that matched nothing.
@@ -1146,6 +1148,8 @@ export default function App() {
           setCache={setScreenerCache}
         />
       )}
+
+      <HelpPanel tab={tab} open={helpOpen} onToggle={setHelpOpen} />
 
       {tab === 'settings' && (
         <SettingsPanel
