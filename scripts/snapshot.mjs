@@ -36,6 +36,44 @@ const arg = (name) => {
   return i === -1 ? null : args[i + 1]
 }
 const DRY = args.includes('--dry')
+const PRUNE_ONLY = args.includes('--prune')
+const RARE_ONLY = args.includes('--rare-only')
+
+/*
+  Rarity filters that between them cover everything worth storing.
+
+  The API matches this parameter as a substring, so "Rare" catches Illustration
+  Rare, Special Illustration Rare, Ultra Rare, Hyper Rare and the rest in one
+  pass, while Common and Uncommon contain no such word and are skipped
+  entirely. Promo needs its own pass, being named differently and holding a lot
+  of graded cards.
+
+  This is the only way found to narrow a fetch before paying for it. The API
+  bills per card returned, so filtering afterwards saves nothing. On a modern
+  set it roughly halves the cost.
+*/
+const RARE_PASSES = ['Rare', 'Promo']
+
+/*
+  Rarities nobody sends to PSA, dropped unless the card proves otherwise.
+
+  A blanket rarity cut would be wrong: about a hundred and sixty commons and
+  uncommons in a modern snapshot do have graded sales behind them, and those
+  are exactly the surprises worth keeping. So the rule is rarity AND no
+  evidence -- a card with PSA sales stays whatever it is called.
+
+  Code cards are dropped outright. They are redemption slips rather than cards
+  and not one of them has ever been graded.
+*/
+const LOW_RARITY = new Set(['common', 'uncommon'])
+const NEVER = new Set(['code card'])
+
+function worthKeeping(c) {
+  const r = String(c.r || '').toLowerCase()
+  if (NEVER.has(r)) return false
+  if (!LOW_RARITY.has(r)) return true
+  return Object.keys(c.psa || {}).length > 0
+}
 
 const KEY = apiKey()
 const headers = { authorization: `Bearer ${KEY}`, accept: 'application/json' }
@@ -141,20 +179,40 @@ function slim(c) {
   }
 }
 
+async function fetchPage(set, rarity, offset) {
+  const q = rarity ? `&rarity=${encodeURIComponent(rarity)}` : ''
+  return get(`/cards?setId=${set.tcgPlayerNumericId}&limit=100&offset=${offset}${q}&includeEbay=true`)
+}
+
 async function fetchSet(set) {
   const out = []
-  for (let offset = 0; offset < 5000; offset += 100) {
-    const json = await get(
-      `/cards?setId=${set.tcgPlayerNumericId}&limit=100&offset=${offset}&includeEbay=true`
-    )
-    const batch = json.data || []
-    out.push(...batch.map(slim))
-    process.stdout.write(`\r  ${set.name}: ${out.length}/${set.cardCount ?? '?'}   `)
-    if (batch.length < 100) break
-    await sleep(1100)
+  const passes = RARE_ONLY ? RARE_PASSES : [null]
+
+  for (const rarity of passes) {
+    for (let offset = 0; offset < 5000; offset += 100) {
+      const json = await fetchPage(set, rarity, offset)
+      const batch = json.data || []
+      out.push(...batch.map(slim))
+      const label = rarity ? `${set.name} [${rarity}]` : set.name
+      process.stdout.write(`\r  ${label}: ${out.length} cards   `)
+      if (batch.length < 100) break
+      await sleep(1100)
+    }
+    if (passes.length > 1) await sleep(1100)
   }
+
   process.stdout.write('\n')
   return out
+}
+
+if (PRUNE_ONLY) {
+  const doc = JSON.parse(readFileSync(OUT, 'utf8'))
+  const kept = doc.cards.filter(worthKeeping)
+  const out = { ...doc, cards: kept }
+  writeFileSync(OUT, JSON.stringify(out))
+  const kb = Buffer.byteLength(JSON.stringify(out)) / 1024
+  console.log(`Kept ${kept.length} of ${doc.cards.length} cards (${kb.toFixed(0)} KB)`)
+  process.exit(0)
 }
 
 const sets = await allSets()
@@ -193,6 +251,10 @@ const prev = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : { sets: [
 const byId = new Map((prev.cards || []).map((c) => [c.id, c]))
 for (const c of cards) byId.set(c.id, c)
 
+const before = byId.size
+for (const [id, c] of byId) if (!worthKeeping(c)) byId.delete(id)
+const dropped = before - byId.size
+
 const setById = new Map((prev.sets || []).map((s) => [s.id, s]))
 for (const s of chosen) {
   setById.set(s.tcgPlayerNumericId, {
@@ -207,10 +269,9 @@ const doc = {
 }
 writeFileSync(OUT, JSON.stringify(doc))
 
-const added = doc.cards.length - (prev.cards || []).length
-if (prev.cards?.length) {
+if (dropped) {
   console.log(`
-Merged with the existing snapshot: ${added} new, ${cards.length - added} refreshed`)
+Dropped ${dropped} commons, uncommons and code cards with no graded sales`)
 }
 
 const kb = (Buffer.byteLength(JSON.stringify(doc)) / 1024).toFixed(0)
