@@ -3,26 +3,27 @@ import React from 'react'
 /**
  * PSA referral offer, shown on every tab.
  *
- * Deliberately one line. It was two when it lived on the submissions tab
- * alone, which is affordable for something you meet once; on every page that
- * weight turns into something people learn to skip past, and it would push the
- * actual content down on every view.
+ * The job is to stay clearly separate from the app's own figures without
+ * looking like an advert bolted on. A dashed border did the first part and
+ * failed the second -- dashes read as cheap, and everything else on screen is
+ * solid, so it stood out as the one element that did not belong.
  *
- * Styled as an offer -- dashed and tinted -- so it cannot be mistaken for one
- * of the app's own figures or a system message. Everything around it is
- * calculated prices, and a promo that blended in would undermine confidence in
- * the numbers beside it.
+ * A small label does the same work quietly: it says what this is, so the box
+ * itself can be built like every other surface in the app.
  *
- * The new-customer condition stays on its face rather than in small print: a
+ * The new-customer condition stays on its face rather than in small print. A
  * discount someone only discovers is invalid at PSA's checkout is worse than
  * never having been offered one, and they would blame this app rather than PSA.
  */
 export default function PsaPromo() {
   return (
     <div className="promo">
-      <b>First PSA submission?</b> Use code{' '}
-      <code className="promo-code">Yuri25</code> at checkout to save $25
-      <span className="muted"> · new account/email only</span>
+      <span className="promo-tag">Offer</span>
+      <span className="promo-text">
+        Save <b>$25</b> on your first PSA submission with code
+      </span>
+      <code className="promo-code">Yuri25</code>
+      <span className="promo-note">New accounts only</span>
     </div>
   )
 }
