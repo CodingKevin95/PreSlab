@@ -5,12 +5,13 @@ import {
 } from '../lib/psa'
 import CardThumb from './CardThumb'
 import SearchPanel from './SearchPanel'
+import { parsePsaOrderCsv, summariseOrder } from '../lib/psaOrder'
 
 export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
   onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError,
-  completed, focusId, onFocused,
+  completed, onImportOrder, focusId, onFocused,
 }) {
   const [q, setQ] = useState('')
 
@@ -42,6 +43,15 @@ export default function SubmissionsPanel({
                 Set a submission to <b>Completed</b> once its cards are back with
                 grades. It moves here, keeping its cards, figures and export.
               </p>
+              <p className="small">
+                Or import the CSV from a finished PSA order to record what actually
+                came back.
+              </p>
+              {onImportOrder && (
+                <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
+                  <ImportOrder onImport={onImportOrder} primary />
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -86,6 +96,7 @@ export default function SubmissionsPanel({
         {onNewSubmission && (
           <button className="primary" onClick={onNewSubmission}>New submission</button>
         )}
+        {completed && onImportOrder && <ImportOrder onImport={onImportOrder} />}
         {/* Only worth showing once there is something to search through. */}
         {submissions.length > 1 && (
           <>
@@ -327,7 +338,9 @@ function Submission({
         </div>
       )}
 
-      {open && (
+      {open && sub.results && <OrderResults results={sub.results} />}
+
+      {open && !sub.results && (
       <>
       <div className="sec">
         <div className="sec-head"><span className="micro">If every card hits its target</span></div>
@@ -674,5 +687,112 @@ function Mini({ k, v, n, tone, open, onClick }) {
       <div className={'v' + (tone ? ' ' + tone : '')} style={{ fontSize: 18 }}>{v}</div>
       {n && <div className="n">{n}</div>}
     </div>
+  )
+}
+
+/**
+ * Reads a PSA order CSV off disk.
+ *
+ * Kept to a file picker: PSA gives you this file, and asking someone to paste
+ * its contents into a box would be a worse version of the same thing.
+ */
+function ImportOrder({ onImport, primary }) {
+  function read(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const { cards, skipped } = parsePsaOrderCsv(String(reader.result))
+        if (!cards.length) throw new Error('No cards found in that file.')
+        onImport(cards, file.name, skipped)
+      } catch (err) {
+        alert('Could not read that order: ' + err.message)
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  return (
+    <label className="row" style={{ margin: 0 }}>
+      <span
+        className={primary ? 'as-btn as-btn-primary' : 'as-btn'}
+        title="The CSV PSA gives you for a finished order"
+      >
+        Import PSA order
+      </span>
+      <input type="file" accept=".csv,text/csv" onChange={read} style={{ display: 'none' }} />
+    </label>
+  )
+}
+
+/**
+ * What an imported order actually returned.
+ *
+ * The gem rate here is measured rather than estimated, which is the figure the
+ * scenario planner asks you to guess before sending anything -- so a finished
+ * order is where you find out how good that guess was.
+ */
+function OrderResults({ results }) {
+  const s = summariseOrder(results)
+  return (
+    <>
+      <div className="sec">
+        <div className="sec-head"><span className="micro">What came back</span></div>
+        <div className="stats">
+          <Mini k="Cards" v={String(s.total)} />
+          <Mini
+            k="PSA 10s"
+            v={String(s.gems)}
+            n={s.gemRate != null ? `${Math.round(s.gemRate * 100)}% of graded cards` : undefined}
+            tone={s.gems > 0 ? 'good' : null}
+          />
+          {s.distribution.slice(0, 4).map(([g, n]) => (
+            <Mini key={g} k={`PSA ${g}`} v={String(n)} />
+          ))}
+        </div>
+      </div>
+
+      <div className="sec">
+        <div className="sec-head">
+          <span className="micro">Graded cards</span>
+          <div className="spacer" />
+          <span className="small muted">{s.total} cert{s.total === 1 ? '' : 's'}</span>
+        </div>
+        <div className="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th className="card-col">Card</th>
+                <th>Cert #</th>
+                <th className="num">Grade</th>
+                <th>After service</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((c) => (
+                <tr key={c.cert}>
+                  <td className="card-col">
+                    <div className="cardname">{c.name}</div>
+                    <div className="cardmeta">
+                      {[c.year, c.set, c.number && `#${c.number}`].filter(Boolean).join(' · ')}
+                    </div>
+                  </td>
+                  <td className="small">{c.cert}</td>
+                  <td className="num">
+                    <span className={'verdict ' + (c.grade === 10 ? 'strong' : c.grade >= 9 ? 'marginal' : 'negative')}>
+                      {c.grade ?? '—'}
+                    </span>
+                    <div className="cardmeta">{c.gradeLabel}</div>
+                  </td>
+                  <td className="small muted">{c.service || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
   )
 }

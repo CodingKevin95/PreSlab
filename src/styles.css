@@ -716,3 +716,18 @@ td.num .cardmeta { white-space: nowrap; }
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px; color: var(--dimmer);
 }
+
+/* A file input's own button cannot be styled, so the label is dressed as one
+   and the input itself is hidden behind it. */
+.as-btn {
+  display: inline-block;
+  background: var(--panel); border: 1px solid var(--line); color: var(--text);
+  padding: 7px 12px; border-radius: 8px; cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.as-btn:hover { background: var(--panel-2); border-color: var(--ink-500); }
+.as-btn-primary {
+  background: var(--accent); border-color: var(--accent);
+  color: var(--bg); font-weight: 600;
+}
+.as-btn-primary:hover { background: #fff; border-color: #fff; }

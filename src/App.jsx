@@ -1059,6 +1059,26 @@ export default function App() {
       {tab === 'completed' && (
         <SubmissionsPanel
           completed
+          onImportOrder={(results, filename) => {
+            /*
+              Recorded on the submission rather than added to the backlog.
+              These have a cert and a real grade but no TCGplayer id, printing
+              or price, so nothing in the app can be calculated from them --
+              they belong here as a record of what happened.
+            */
+            const order = /(\d{5,})/.exec(filename || '')?.[1] || ''
+            const sub = {
+              id: uid(),
+              name: order ? `PSA order ${order}` : 'Imported PSA order',
+              createdAt: Date.now(),
+              status: 'completed',
+              tracking: order,
+              results,
+            }
+            setSubmissions((prev) => [sub, ...prev])
+            setNotice(`Imported ${results.length} graded card${results.length === 1 ? '' : 's'}.`)
+            setFocusSubmission(sub.id)
+          }}
           submissions={doneSubs}
           cards={cards}
           tiers={tiers}
