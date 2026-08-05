@@ -158,33 +158,41 @@ export function parsePsaOrderCsv(text) {
 }
 
 /**
- * What the order actually returned, measured against the grade you were after.
+ * What the order actually returned, measured card by card.
  *
- * A hit is at or above the target, not exactly on it. Targeting a 9 and getting
- * a 10 is not a miss, and counting it as one would understate how well a
- * submission went and push your planning rate down for no reason.
+ * Each card carries its own target, because a submission is rarely one bet:
+ * you might send a chase card hoping for a 10 and a stack of bulk you would be
+ * happy to see come back 9. Scoring the whole order against one grade would
+ * report a failure on cards that did exactly what you wanted.
  *
- * The resulting rate is the same quantity the scenario planner asks you to
- * estimate before sending anything -- so this is the measured version of a
- * number that is otherwise a guess.
+ * A hit is at or above its target, not exactly on it. Targeting a 9 and getting
+ * a 10 is not a miss, and counting it as one would understate the submission
+ * and drag the planning rate down for no reason.
  */
-export function summariseOrder(cards, targetGrade = 10) {
-  const target = Number(targetGrade) || 10
+export function summariseOrder(cards, fallbackTarget = 10) {
+  const fallback = Number(fallbackTarget) || 10
+  const targetOf = (c) => Number(c.target ?? fallback) || fallback
+
   const graded = cards.filter((c) => c.grade != null)
-  const hits = graded.filter((c) => c.grade >= target)
+  const hits = graded.filter((c) => c.grade >= targetOf(c))
   const byGrade = new Map()
   for (const c of graded) byGrade.set(c.grade, (byGrade.get(c.grade) || 0) + 1)
 
+  // Only meaningful when every card is after the same thing; otherwise there
+  // is no single target for the header to name.
+  const targets = new Set(cards.map(targetOf))
+
   return {
-    target,
     total: cards.length,
     graded: graded.length,
     ungraded: cards.length - graded.length,
     hits: hits.length,
     misses: graded.length - hits.length,
     hitRate: graded.length ? hits.length / graded.length : null,
-    // Kept separate from the hit rate: PSA 10s are what most pricing is built
-    // on, so it stays worth seeing even when you were aiming lower.
+    mixedTargets: targets.size > 1,
+    target: targets.size === 1 ? [...targets][0] : null,
+    // Reported whatever the targets are: most pricing is built on PSA 10s, so
+    // the count stays worth seeing even when you were aiming lower.
     gems: graded.filter((c) => c.grade === 10).length,
     distribution: [...byGrade.entries()].sort((a, b) => b[0] - a[0]),
   }

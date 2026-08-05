@@ -343,8 +343,14 @@ function Submission({
       {open && sub.results && (
         <OrderResults
           results={sub.results}
-          target={sub.targetGrade ?? 10}
-          onTarget={(g) => onPatch({ targetGrade: g })}
+          onSetTarget={(cert, g) =>
+            onPatch({
+              results: sub.results.map((r) => (r.cert === cert ? { ...r, target: g } : r)),
+            })
+          }
+          onSetAllTargets={(g) =>
+            onPatch({ results: sub.results.map((r) => ({ ...r, target: g })) })
+          }
           onUseRate={onUseRate}
         />
       )}
@@ -743,21 +749,25 @@ function ImportOrder({ onImport, primary }) {
  * scenario planner asks you to guess before sending anything -- so a finished
  * order is where you find out how good that guess was.
  */
-function OrderResults({ results, target, onTarget, onUseRate }) {
-  const s = summariseOrder(results, target)
+function OrderResults({ results, onSetTarget, onSetAllTargets, onUseRate }) {
+  const s = summariseOrder(results)
   return (
     <>
       <div className="sec">
         <div className="sec-head">
           <span className="micro">What came back</span>
-          <span className="small muted">against a target of</span>
+          {/* Sets every card at once. Targets are per card, but most orders are
+              one bet, and setting twenty of them by hand to say so would be
+              worse than not offering it. */}
+          <span className="small muted">set all targets to</span>
           <select
             className="mini"
             style={{ width: 96 }}
-            value={target}
-            onChange={(e) => onTarget(Number(e.target.value))}
-            title="The grade you were aiming for. A card at or above it counts as a hit."
+            value={s.target ?? ''}
+            onChange={(e) => onSetAllTargets(Number(e.target.value))}
+            title="Applies to every card in this order. Individual cards can still differ."
           >
+            {s.mixedTargets && <option value="">Mixed</option>}
             {GRADE_OPTIONS.map((g) => (
               <option key={g} value={g}>PSA {g}</option>
             ))}
@@ -778,9 +788,9 @@ function OrderResults({ results, target, onTarget, onUseRate }) {
         <div className="stats">
           <Mini k="Cards" v={String(s.total)} />
           <Mini
-            k={`Hit PSA ${s.target}`}
+            k={s.mixedTargets ? 'Hit their target' : `Hit PSA ${s.target}`}
             v={s.hitRate != null ? `${Math.round(s.hitRate * 100)}%` : '—'}
-            n={`${s.hits} of ${s.graded} at or above`}
+            n={`${s.hits} of ${s.graded} at or above${s.mixedTargets ? ' its own target' : ''}`}
             tone={s.hits > 0 ? 'good' : null}
             lead
           />
@@ -809,6 +819,7 @@ function OrderResults({ results, target, onTarget, onUseRate }) {
                 <th className="card-col">Card</th>
                 <th>Cert #</th>
                 <th className="num">Grade</th>
+                <th>Target</th>
                 <th>After service</th>
               </tr>
             </thead>
@@ -822,11 +833,26 @@ function OrderResults({ results, target, onTarget, onUseRate }) {
                     </div>
                   </td>
                   <td className="small">{c.cert}</td>
+                  {/* Coloured against its own target rather than a fixed 10:
+                      a 9 is a hit when a 9 is what you wanted. */}
                   <td className="num">
-                    <span className={'verdict ' + (c.grade === 10 ? 'strong' : c.grade >= 9 ? 'marginal' : 'negative')}>
+                    <span className={'verdict ' + gradeTone(c)}>
                       {c.grade ?? '—'}
                     </span>
                     <div className="cardmeta">{c.gradeLabel}</div>
+                  </td>
+                  <td>
+                    <select
+                      className="mini"
+                      style={{ width: 96 }}
+                      value={c.target ?? 10}
+                      onChange={(e) => onSetTarget(c.cert, Number(e.target.value))}
+                      title="What you were hoping this card would grade"
+                    >
+                      {GRADE_OPTIONS.map((g) => (
+                        <option key={g} value={g}>PSA {g}</option>
+                      ))}
+                    </select>
                   </td>
                   <td className="small muted">{c.service || '—'}</td>
                 </tr>
@@ -837,4 +863,13 @@ function OrderResults({ results, target, onTarget, onUseRate }) {
       </div>
     </>
   )
+}
+
+/** Green when a card met its own target, amber just under, red well under. */
+function gradeTone(c) {
+  if (c.grade == null) return 'unknown'
+  const target = Number(c.target ?? 10) || 10
+  if (c.grade >= target) return 'strong'
+  if (c.grade >= target - 1) return 'marginal'
+  return 'negative'
 }
