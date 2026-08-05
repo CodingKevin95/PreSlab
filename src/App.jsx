@@ -1068,11 +1068,42 @@ export default function App() {
           settings={settings}
           setSettings={setSettings}
           cards={cards}
+          submissions={submissions}
           onImport={(parsed) => {
-            setCards(parsed.cards)
+            /*
+              A card may only claim to be in a submission that came with the
+              file. Status is derived from that id, so a reference to a batch
+              that is not here leaves a row reading "Submitted" with nothing to
+              open -- and no way to get it back to the backlog by hand.
+
+              This happens with version 1 exports, which never wrote submissions
+              at all, and with any file edited by hand. Rather than reject those,
+              the stale reference is dropped and the card lands in the backlog,
+              which is recoverable.
+            */
+            const incoming = Array.isArray(parsed.submissions) ? parsed.submissions : []
+            const known = new Set(incoming.map((s) => s.id))
+            let orphaned = 0
+            const cards = parsed.cards.map((c) => {
+              if (!c.submissionId || known.has(c.submissionId)) return c
+              orphaned++
+              return { ...c, submissionId: null }
+            })
+
+            setCards(cards)
+            setSubmissions(incoming)
             if (parsed.tiers) setTiers(parsed.tiers)
             if (parsed.settings) setSettings(parsed.settings)
-            setNotice(`Imported ${parsed.cards.length} cards.`)
+            setSelected(new Set())
+
+            setNotice(
+              `Imported ${cards.length} cards` +
+              (incoming.length ? ` and ${incoming.length} submission${incoming.length === 1 ? '' : 's'}` : '') +
+              (orphaned
+                ? `. ${orphaned} card${orphaned === 1 ? '' : 's'} referenced a submission that was not in the file, ` +
+                  `so ${orphaned === 1 ? 'it was' : 'they were'} returned to the backlog.`
+                : '.')
+            )
             setTab('backlog')
           }}
         />

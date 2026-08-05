@@ -3,7 +3,7 @@ import { DEFAULT_TIERS, PRICE_BASES, money } from '../lib/psa'
 import { clearCache, getUserKey, setUserKey } from '../api/pricetracker'
 
 export default function SettingsPanel({
-  tiers, setTiers, settings, setSettings, cards, onImport,
+  tiers, setTiers, settings, setSettings, cards, submissions, onImport,
 }) {
   const [userKey, setUserKeyInput] = useState(getUserKey())
   const [savedKey, setSavedKey] = useState(false)
@@ -11,15 +11,29 @@ export default function SettingsPanel({
     setTiers(tiers.map((t) => (t.id === id ? { ...t, ...patch } : t)))
   }
 
+  /**
+   * A complete copy of everything the app holds, for moving between machines.
+   *
+   * Submissions have to travel with the cards. Cards carry the id of the batch
+   * they belong to and their status is derived from it, so a file with cards
+   * but no submissions restores rows that claim to be submitted, to a batch
+   * that does not exist, with no way to open or undo it. Version 1 files were
+   * written that way; the importer repairs them.
+   */
   function exportJson() {
-    const blob = new Blob(
-      [JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), cards, tiers, settings }, null, 2)],
-      { type: 'application/json' }
-    )
+    const doc = {
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      cards,
+      submissions,
+      tiers,
+      settings,
+    }
+    const blob = new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `psa-backlog-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `preslab-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -31,7 +45,9 @@ export default function SettingsPanel({
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result)
-        if (!Array.isArray(parsed.cards)) throw new Error('No cards array in that file.')
+        if (!Array.isArray(parsed.cards)) {
+          throw new Error('That file has no cards in it — is it a PreSlab export?')
+        }
         onImport(parsed)
       } catch (err) {
         alert('Could not read that file: ' + err.message)
@@ -196,19 +212,24 @@ export default function SettingsPanel({
       <div className="panel">
         <h2>Your data</h2>
         <p className="sub">
-          Everything lives in this browser&apos;s localStorage &mdash; nothing is uploaded
-          anywhere. Export regularly if you care about it.
+          Everything lives in this browser &mdash; nothing is uploaded anywhere, so
+          it does not follow you to another computer or phone on its own.
+          Exporting is how you move it, and how you keep a copy if this browser&apos;s
+          data is ever cleared.
         </p>
         <div className="row wrap">
-          <button onClick={exportJson}>Export JSON</button>
+          <button onClick={exportJson} title="Cards, submissions, tiers and settings in one file">
+            Export backup
+          </button>
           <label className="row" style={{ margin: 0 }}>
             <span
               style={{
                 display: 'inline-block', padding: '7px 12px', borderRadius: 8,
                 border: '1px solid var(--line)', background: 'var(--panel-2)', cursor: 'pointer',
               }}
+              title="Replaces everything currently in this browser with the contents of the file"
             >
-              Import JSON
+              Import backup
             </span>
             <input type="file" accept="application/json" onChange={importJson} style={{ display: 'none' }} />
           </label>
