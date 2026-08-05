@@ -348,9 +348,6 @@ function Submission({
               results: sub.results.map((r) => (r.cert === cert ? { ...r, target: g } : r)),
             })
           }
-          onSetAllTargets={(g) =>
-            onPatch({ results: sub.results.map((r) => ({ ...r, target: g })) })
-          }
           onUseRate={onUseRate}
         />
       )}
@@ -749,29 +746,13 @@ function ImportOrder({ onImport, primary }) {
  * scenario planner asks you to guess before sending anything -- so a finished
  * order is where you find out how good that guess was.
  */
-function OrderResults({ results, onSetTarget, onSetAllTargets, onUseRate }) {
+function OrderResults({ results, onSetTarget, onUseRate }) {
   const s = summariseOrder(results)
   return (
     <>
       <div className="sec">
         <div className="sec-head">
           <span className="micro">What came back</span>
-          {/* Sets every card at once. Targets are per card, but most orders are
-              one bet, and setting twenty of them by hand to say so would be
-              worse than not offering it. */}
-          <span className="small muted">set all targets to</span>
-          <select
-            className="mini"
-            style={{ width: 96 }}
-            value={s.target ?? ''}
-            onChange={(e) => onSetAllTargets(Number(e.target.value))}
-            title="Applies to every card in this order. Individual cards can still differ."
-          >
-            {s.mixedTargets && <option value="">Mixed</option>}
-            {GRADE_OPTIONS.map((g) => (
-              <option key={g} value={g}>PSA {g}</option>
-            ))}
-          </select>
           <div className="spacer" />
           {/* The measured rate is only useful if it can replace the guess, so
               it is offered rather than left to be copied by hand. */}
