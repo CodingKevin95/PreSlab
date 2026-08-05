@@ -360,52 +360,28 @@ td.num .cardmeta { white-space: nowrap; }
 .banner.err { background: #2a1614; border-color: #5c2a25; color: #ffb4ac; }
 .banner.info { background: var(--panel-2); border-color: var(--line); color: var(--text); }
 
-/*
-   Built like every other surface rather than marked out as foreign. The label
-   is what says this is an offer, which frees the container from having to
-   shout it.
-*/
+/* A line of text rather than a component. Nothing to stretch, nothing to
+   align against, and nothing that reads as an advert bolted to the page. */
 .promo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-  background: var(--panel);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  padding: var(--sp-2) var(--sp-3);
-  margin-bottom: var(--sp-3);
-  font-size: 13px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+  margin: 0 0 var(--sp-3);
+  padding: 0 2px;
+  font-size: 12.5px;
+  color: var(--dimmer);
 }
-.promo-tag {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  font-weight: 700;
-  color: var(--bg);
-  background: var(--dim);
-  border-radius: 5px;
-  padding: 2px 7px;
-  flex: none;
-}
-.promo-text { color: var(--text); }
+.promo b { color: var(--dim); font-weight: 650; }
 .promo-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12.5px;
+  font-size: 12px;
   background: var(--field);
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 2px 8px;
+  border-radius: 5px;
+  padding: 1px 6px;
   color: var(--text);
   font-weight: 600;
-  letter-spacing: .4px;
+  letter-spacing: .3px;
   /* One click selects the whole code instead of dragging across it. */
   user-select: all;
 }
-/* Pushed to the far end so the condition reads as a footnote to the offer
-   rather than part of the sentence. Falls under it on a narrow screen. */
-.promo-note { color: var(--dimmer); font-size: 12px; margin-left: auto; }
 
 .empty { text-align: center; padding: 42px 20px; color: var(--dimmer); }
 .empty p { margin: 6px 0; }
