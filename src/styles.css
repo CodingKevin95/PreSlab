@@ -6,32 +6,31 @@
   --brand-050: #F0F7F4;
 
   /*
-    Nothing here is pure white. Panels are the largest surfaces on screen, so
-    at #ffffff they were the brightest thing in the interface by area -- glaring
-    against a palette whose own lightest tone is #F0F7F4, and tiring to read a
-    long table on.
+    The page sits on #B3BFB8 from the palette, with panels a step lighter so
+    cards still lift off it.
 
-    Panels now sit just above the page rather than well above it: enough
-    separation to read as cards, not enough to shine. The page drops a step to
-    keep that separation once the panels came down.
+    Surfaces this deep only work because the ink came down with them. At the
+    previous text colours the darkest workable panel was #DAE6DF -- anything
+    below that and the 11px labels and the profit figures dropped under 4.5:1.
+    Darkening the text first is what buys the surfaces room to move.
   */
-  --bg: #dce7e0;
-  --panel: #ecf3ef;
-  --panel-2: #d4e2da;
-  /* Fields stay the brightest surface, but they are small. A box you type into
-     should look different from what surrounds it, and small bright areas do
-     not cause the fatigue that large ones do. */
-  --field: #f8fbf9;
+  --bg: #b3bfb8;
+  --panel: #c6d8cd;
+  --panel-2: #a8b9af;
+  /* Fields stay the lightest surface, but they are small. A box you type into
+     should look different from what surrounds it, and small light areas do not
+     cause the fatigue that large ones do. */
+  --field: #dae6df;
 
-  --line: var(--brand-200);
-  --line-soft: #c6d6cc;
-  --text: var(--brand-900);
+  --line: #93a89b;
+  --line-soft: #a5b8ac;
+  --text: #26302a;
 
-  /* Secondary text is darker than the palette's mid tone. #7E8D85 on white is
-     about 3.5:1, which fails for the 11px labels this is mostly used on, so
-     the readable step sits here and the palette tone drops to tertiary. */
-  --dim: #5a6961;
-  --dimmer: #7e8d85;
+  /* Secondary and tertiary text. Both sit well below the palette's mid tone:
+     #7E8D85 on these surfaces is around 2:1, nowhere near readable for the
+     11px labels this is mostly used on. */
+  --dim: #3d4a42;
+  --dimmer: #46524a;
 
   --accent: var(--brand-900);
   --accent-dim: var(--brand-500);
@@ -40,9 +39,9 @@
      The interface is now green, so a muted green would read as decoration
      rather than "this one makes money" -- saturation is what separates a
      figure that means something from the surface behind it. */
-  --good: #14733a;
-  --warn: #8f5606;
-  --bad: #b42318;
+  --good: #0d5528;
+  --warn: #663c02;
+  --bad: #8c1912;
 
   --radius: 12px;
 
@@ -57,8 +56,8 @@
 
   /* Divider weights, weakest to strongest. Row rules sit at the bottom so a
      long table reads as rows of data rather than a grid of boxes. */
-  --rule-faint: #dbe6e0;
-  --rule: #bfd0c6;
+  --rule-faint: #b8c9be;
+  --rule: #9db0a4;
 
   color-scheme: light;
 }
@@ -175,7 +174,7 @@ select.mini { padding: 4px 26px 4px 8px; }
   border-radius: var(--radius);
   padding: var(--sp-4);
   margin-bottom: var(--sp-3);
-  box-shadow: 0 1px 2px rgba(60, 73, 63, .06);
+  box-shadow: 0 1px 3px rgba(38, 48, 42, .10);
 }
 .panel h2 { margin: 0 0 4px; font-size: 14px; font-weight: 650; }
 .panel .sub { color: var(--dim); font-size: 12.5px; margin: 0 0 14px; }
@@ -190,7 +189,7 @@ select.mini { padding: 4px 26px 4px 8px; }
 .stat {
   background: var(--panel); border: 1px solid var(--line-soft);
   border-radius: var(--radius); padding: var(--sp-3) var(--sp-3);
-  box-shadow: 0 1px 2px rgba(60, 73, 63, .06);
+  box-shadow: 0 1px 3px rgba(38, 48, 42, .10);
 }
 .stat .v { font-size: 21px; font-weight: 650; margin-top: 5px; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
 .stat .n { color: var(--dimmer); font-size: 11.5px; margin-top: 3px; }
