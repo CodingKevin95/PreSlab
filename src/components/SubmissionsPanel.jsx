@@ -10,20 +10,49 @@ export default function SubmissionsPanel({
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
   focusId, onFocused,
 }) {
-  if (submissions.length === 0) {
+  /**
+   * PSA referral offer.
+   *
+   * Lives with submissions because that is the point someone is about to send
+   * cards and $25 off is worth something -- on the backlog they are still
+   * deciding what to grade at all.
+   *
+   * Styled as an offer rather than blending into the app's own figures, and
+   * the new-customer condition is stated on its face rather than in small
+   * print. A discount someone discovers they cannot use at checkout is worse
+   * than never having been offered one.
+   */
+  function PsaPromo() {
     return (
-      <div className="panel">
-        <div className="empty">
-          <p style={{ fontSize: 15, color: 'var(--dim)' }}>No submissions yet.</p>
-          <p>
-            Go to <b>Backlog</b>, tick the cards you want to send, and choose
-            <b> Add to submission</b>.
-          </p>
-          <button className="primary" style={{ marginTop: 12 }} onClick={onGoToBacklog}>
-            Open backlog
-          </button>
+      <div className="promo">
+        <div>
+          <b>First PSA submission?</b> Use code{' '}
+          <code className="promo-code">Yuri25</code> at checkout to save $25.
+        </div>
+        <div className="small muted" style={{ marginTop: 4 }}>
+          For new PSA customers — applies to the first submission on a new account or email.
         </div>
       </div>
+    )
+  }
+
+  if (submissions.length === 0) {
+    return (
+      <>
+        <div className="panel">
+          <div className="empty">
+            <p style={{ fontSize: 15, color: 'var(--dim)' }}>No submissions yet.</p>
+            <p>
+              Go to <b>Backlog</b>, tick the cards you want to send, and choose
+              <b> Add to submission</b>.
+            </p>
+            <button className="primary" style={{ marginTop: 12 }} onClick={onGoToBacklog}>
+              Open backlog
+            </button>
+          </div>
+        </div>
+        <PsaPromo />
+      </>
     )
   }
 
@@ -46,6 +75,7 @@ export default function SubmissionsPanel({
 
   return (
     <>
+      <PsaPromo />
       {submissions.length > 1 && (
         <div className="row" style={{ marginBottom: 12 }}>
           <div className="spacer" />

@@ -311,6 +311,28 @@ td.num .cardmeta { white-space: nowrap; }
 .banner.err { background: #2b1416; border-color: #6b2226; color: #ffb3b0; }
 .banner.info { background: #10203a; border-color: #234070; color: #a8c7f5; }
 
+/* An offer, not app output. Dashed and tinted so it never reads as one of the
+   app's own figures or a system message. */
+.promo {
+  border: 1px dashed var(--accent-dim);
+  background: #101a2c;
+  border-radius: var(--radius);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-3);
+  font-size: 13px;
+}
+.promo-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: #0d1117;
+  border: 1px solid var(--accent-dim);
+  border-radius: 6px;
+  padding: 1px 7px;
+  color: var(--accent);
+  font-weight: 650;
+  letter-spacing: .4px;
+  user-select: all;
+}
+
 .empty { text-align: center; padding: 42px 20px; color: var(--dimmer); }
 .empty p { margin: 6px 0; }
 
