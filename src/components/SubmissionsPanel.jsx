@@ -335,6 +335,18 @@ function Submission({
           </div>
         </div>
 
+        {/* Identifies the batch, so it belongs with the name and status rather
+            than under the table -- you reach for it to check a number against
+            PSA, not at the end of reviewing the cards. */}
+        <input
+          className="mini"
+          style={{ width: 150 }}
+          value={sub.tracking || ''}
+          placeholder="Submission #"
+          onChange={(e) => onPatch({ tracking: e.target.value })}
+          title="The PSA order number for this batch"
+        />
+
         <select
           className="mini"
           value={statusIdOf(sub)}
@@ -706,17 +718,6 @@ function Submission({
           </div>
 
           <div className="row wrap" style={{ marginTop: 28, gap: 12 }}>
-            {/* Still stored under `tracking`, which is what every existing
-                submission already uses -- renaming the key would orphan the
-                numbers people have entered. */}
-            <div style={{ width: 260 }}>
-              <label className="small muted">Submission number</label>
-              <input
-                value={sub.tracking || ''}
-                placeholder="PSA order #"
-                onChange={(e) => onPatch({ tracking: e.target.value })}
-              />
-            </div>
             <div className="grow" />
             <button
               style={{ alignSelf: 'flex-end' }}
