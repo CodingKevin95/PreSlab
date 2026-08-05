@@ -37,10 +37,33 @@ export const DEFAULT_TARGET_GRADE = 10
 // simply whether it is in one of these at all.
 export const SUBMISSION_STATUSES = [
   { id: 'draft', label: 'Draft', hint: 'Still choosing what goes in' },
-  { id: 'shipped', label: 'Shipped', hint: 'In the mail to PSA' },
-  { id: 'at-psa', label: 'At PSA', hint: 'Received, in the queue' },
-  { id: 'returned', label: 'Returned', hint: 'Back with grades' },
+  { id: 'at-psa', label: 'At PSA', hint: 'Sent and waiting on grades' },
+  { id: 'completed', label: 'Completed', hint: 'Graded and back — moves to the Completed tab' },
 ]
+
+/**
+ * Statuses that have been retired, and what they became.
+ *
+ * A stored submission keeps whatever it was last set to, so dropping an option
+ * from the list above is not enough: an old value would match nothing, fall
+ * back to Draft, and quietly reopen a batch that had already been sent.
+ *
+ * "Shipped" and "At PSA" collapsed into one -- both mean the cards are gone and
+ * you are waiting -- and "Returned" is what Completed now means.
+ */
+const RETIRED_STATUSES = { shipped: 'at-psa', returned: 'completed' }
+
+/** The status a submission should be treated as, old values included. */
+export function statusIdOf(sub) {
+  const raw = sub?.status
+  const mapped = RETIRED_STATUSES[raw] || raw
+  return SUBMISSION_STATUSES.some((s) => s.id === mapped) ? mapped : 'draft'
+}
+
+/** Completed batches are done with; they live on their own tab. */
+export function isCompleted(sub) {
+  return statusIdOf(sub) === 'completed'
+}
 
 /**
  * Closest grade we actually have a comp for. PSA 10 comps are the scarcest, so

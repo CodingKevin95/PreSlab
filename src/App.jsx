@@ -3,7 +3,7 @@ import { usePersisted, useCallBudget, uid } from './lib/storage'
 import { useDiskSync } from './lib/diskSync'
 import {
   DEFAULT_TIERS, STATUSES, DEFAULT_TARGET_GRADE,
-  rollUp, analyzeCard, money, submissionUnits, statusOf, costsOf,
+  rollUp, analyzeCard, money, submissionUnits, statusOf, costsOf, isCompleted,
 } from './lib/psa'
 import SubmissionsPanel from './components/SubmissionsPanel'
 import SubmitDialog from './components/SubmitDialog'
@@ -478,6 +478,12 @@ export default function App() {
 
   // Which cards the screener should show as already owned. Keyed on TCGplayer
   // id rather than printing, so a card you hold in any printing reads as added.
+  // Completed batches are finished business. They stay in the data -- their
+  // cards are still submitted and still counted -- but they leave the working
+  // list so it only shows what is still in play.
+  const activeSubs = useMemo(() => submissions.filter((s) => !isCompleted(s)), [submissions])
+  const doneSubs = useMemo(() => submissions.filter(isCompleted), [submissions])
+
   const ownedIds = useMemo(
     () => new Set(cards.map((c) => String(c.tcgPlayerId))),
     [cards]
@@ -793,7 +799,8 @@ export default function App() {
         <div className="tabs">
           {[
             ['backlog', 'Backlog'],
-            ['submissions', `Submissions${submissions.length ? ` (${submissions.length})` : ''}`],
+            ['submissions', `Submissions${activeSubs.length ? ` (${activeSubs.length})` : ''}`],
+            ...(doneSubs.length ? [['completed', `Completed (${doneSubs.length})`]] : []),
             ...(SCAN_ENABLED ? [['find', 'Find cards']] : []),
             ['settings', 'Settings'],
           ].filter(Boolean).map(([id, label]) => (
@@ -1021,11 +1028,16 @@ export default function App() {
 
       {tab === 'submissions' && (
         <SubmissionsPanel
-          submissions={submissions}
+          submissions={activeSubs}
           cards={cards}
           tiers={tiers}
           settings={settings}
-          onPatchSubmission={patchSubmission}
+          onPatchSubmission={(id, patch) => {
+            patchSubmission(id, patch)
+            if (patch.status === 'completed') {
+              setNotice('Marked completed — moved to the Completed tab.')
+            }
+          }}
           onDeleteSubmission={deleteSubmission}
           onRemoveCards={removeFromSubmission}
           onGoToBacklog={() => setTab('backlog')}
@@ -1035,6 +1047,25 @@ export default function App() {
             setNotice(`Created ${sub.name}. Search below to add cards to it.`)
             setFocusSubmission(sub.id)
           }}
+          qtyOf={qtyOf}
+          adding={adding}
+          onUsage={handleUsage}
+          onError={reportError}
+          focusId={focusSubmission}
+          onFocused={() => setFocusSubmission(null)}
+        />
+      )}
+
+      {tab === 'completed' && (
+        <SubmissionsPanel
+          submissions={doneSubs}
+          cards={cards}
+          tiers={tiers}
+          settings={settings}
+          onPatchSubmission={patchSubmission}
+          onDeleteSubmission={deleteSubmission}
+          onRemoveCards={removeFromSubmission}
+          onGoToBacklog={() => setTab('backlog')}
           qtyOf={qtyOf}
           adding={adding}
           onUsage={handleUsage}

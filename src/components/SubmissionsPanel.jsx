@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   analyzeCard, money, percent, qtyOf, submissionUnits, gradeScenarios,
-  priceAsOf, agoLabel, SUBMISSION_STATUSES, tierForDeclaredValue,
+  priceAsOf, agoLabel, SUBMISSION_STATUSES, tierForDeclaredValue, statusIdOf,
 } from '../lib/psa'
 import CardThumb from './CardThumb'
 import SearchPanel from './SearchPanel'
@@ -23,7 +23,9 @@ export default function SubmissionsPanel({
             tick what you want to send and choose <b>Add to submission</b>.
           </p>
           <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
-            <button className="primary" onClick={onNewSubmission}>New submission</button>
+            {onNewSubmission && (
+              <button className="primary" onClick={onNewSubmission}>New submission</button>
+            )}
             <button onClick={onGoToBacklog}>Open backlog</button>
           </div>
         </div>
@@ -40,7 +42,7 @@ export default function SubmissionsPanel({
     for (const s of submissions) {
       const mine = cards.filter((c) => c.submissionId === s.id)
       const size = submissionUnits(s.id, cards)
-      const label = SUBMISSION_STATUSES.find((x) => x.id === s.status)?.label || s.status
+      const label = SUBMISSION_STATUSES.find((x) => x.id === statusIdOf(s))?.label || statusIdOf(s)
       for (const card of mine) {
         rows.push([s.name, label, ...csvRow(card, analyzeCard(card, tiers, settings, size))])
       }
@@ -51,7 +53,9 @@ export default function SubmissionsPanel({
   return (
     <>
       <div className="row" style={{ marginBottom: 16 }}>
-        <button className="primary" onClick={onNewSubmission}>New submission</button>
+        {onNewSubmission && (
+          <button className="primary" onClick={onNewSubmission}>New submission</button>
+        )}
         <div className="spacer" />
         {submissions.length > 1 && (
           <button onClick={exportAll} title="Every submission in one spreadsheet">
@@ -200,7 +204,7 @@ function Submission({
   const blocked = tiers.filter((t) => units < (Number(t.minCards) || 1))
   const nextTier = blocked.sort((a, b) => Number(a.minCards) - Number(b.minCards))[0]
 
-  const status = SUBMISSION_STATUSES.find((s) => s.id === sub.status) || SUBMISSION_STATUSES[0]
+  const status = SUBMISSION_STATUSES.find((s) => s.id === statusIdOf(sub)) || SUBMISSION_STATUSES[0]
 
   const priced = priceAsOf(cards)
 
@@ -255,7 +259,7 @@ function Submission({
 
         <select
           className="mini"
-          value={sub.status}
+          value={statusIdOf(sub)}
           onChange={(e) => onPatch({ status: e.target.value })}
           style={{ width: 130 }}
           title={status.hint}
