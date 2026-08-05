@@ -15,9 +15,9 @@ export default function SubmissionsPanel({
   const [q, setQ] = useState('')
 
   /*
-    Matches the batch and what is in it. Looking for a submission usually
-    starts from a card -- "which batch has the Umbreon in it" -- so searching
-    only the names would miss the question people actually arrive with.
+    Identifies the batch itself -- its name and its submission number -- and
+    deliberately not the cards in it. Filtering the cards is what the box inside
+    each submission does; this one answers "which of these is 15249687".
 
     Same rule as the other filters: every word must appear somewhere, so extra
     words narrow rather than broaden.
@@ -26,14 +26,10 @@ export default function SubmissionsPanel({
   const shown = useMemo(() => {
     if (!terms.length) return submissions
     return submissions.filter((sub) => {
-      const mine = cards.filter((c) => c.submissionId === sub.id)
-      const hay = [
-        sub.name, sub.tracking,
-        ...mine.map((c) => `${c.name} ${c.setName || ''} ${c.number || ''}`),
-      ].filter(Boolean).join(' ').toLowerCase()
+      const hay = [sub.name, sub.tracking].filter(Boolean).join(' ').toLowerCase()
       return terms.every((t) => hay.includes(t))
     })
-  }, [submissions, cards, q])
+  }, [submissions, q])
 
   if (submissions.length === 0) {
     return (
@@ -86,7 +82,7 @@ export default function SubmissionsPanel({
               style={{ width: 230 }}
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Find a submission or a card in one…"
+              placeholder="Name or submission number…"
             />
             {terms.length > 0 && (
               <>
@@ -110,7 +106,8 @@ export default function SubmissionsPanel({
           <div className="empty">
             <p>No submission matches that.</p>
             <p className="small">
-              Searches batch names, submission numbers, and the cards inside them.
+              Searches batch names and submission numbers. To find a card, use the
+              filter inside a submission.
             </p>
           </div>
         </div>
