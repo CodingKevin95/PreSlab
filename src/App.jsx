@@ -629,7 +629,7 @@ export default function App() {
     } else {
       const ok = targets.length - failed.length
       setNotice(
-        `Refreshed ${ok} card${ok === 1 ? '' : 's'} — ${found} had PSA sales on record, ${ok - found} had none.` +
+        `Refreshed ${ok} card${ok === 1 ? '' : 's'}. ${found} had PSA sales on record, ${ok - found} had none.` +
         (failed.length ? ` The API returned nothing for: ${failed.join(', ')}.` : '')
       )
     }
@@ -856,7 +856,7 @@ export default function App() {
       )}
       {fetchingComps && (
         <div className="banner info">
-          Fetching PSA comps — {fetchingComps.done} of {fetchingComps.total} done.
+          Fetching PSA comps: {fetchingComps.done} of {fetchingComps.total} done.
           <span className="muted small" style={{ marginLeft: 8 }}>
             Paced ~6s apart to stay under the 10/min limit, so this takes a moment.
           </span>
@@ -976,7 +976,7 @@ export default function App() {
                 const lines = [
                   `Delete ${chosen.length} row${chosen.length === 1 ? '' : 's'} (${units} card${units === 1 ? '' : 's'}) from the backlog?`,
                   '',
-                  ...chosen.slice(0, 8).map((c) => `  • ${c.name} — ${c.printing} ×${Math.max(1, parseInt(c.qty, 10) || 1)}`),
+                  ...chosen.slice(0, 8).map((c) => `  • ${c.name}, ${c.printing} ×${Math.max(1, parseInt(c.qty, 10) || 1)}`),
                   ...(chosen.length > 8 ? [`  …and ${chosen.length - 8} more`] : []),
                 ]
                 if (inSubs > 0) {
@@ -1062,7 +1062,7 @@ export default function App() {
           onPatchSubmission={(id, patch) => {
             patchSubmission(id, patch)
             if (patch.status === 'completed') {
-              setNotice('Marked completed — moved to the Completed tab.')
+              setNotice('Marked completed. It moved to the Completed tab.')
             }
           }}
           onDeleteSubmission={deleteSubmission}

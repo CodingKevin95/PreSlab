@@ -210,7 +210,7 @@ export default function ScreenerPanel({
 
         <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
           {scanEra === 'all'
-            ? 'Most valuable cards first across every era — which in practice means '
+            ? 'Most valuable cards first across every era, which in practice means '
               + 'mostly vintage, since those carry the highest prices.'
             : `Spread evenly across the ${scanEra} sets, most valuable first in each, `
               + 'so the whole era is represented rather than just its newest releases.'}
@@ -299,7 +299,7 @@ export default function ScreenerPanel({
                 Try 5 per week
               </button>
               <span className="muted">
-                {' '}— graded Pokémon cards rarely trade more than a few times a week,
+                {' '}graded Pokémon cards rarely trade more than a few times a week,
                 so a high bar can exclude everything.
               </span>
             </p>
@@ -311,7 +311,7 @@ export default function ScreenerPanel({
           {scanInfo?.setsTotal > 0 && scanInfo.setsCovered < scanInfo.setsTotal && (
             <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
               Covered the {scanInfo.setsCovered} newest {scanInfo.series} sets of{' '}
-              {scanInfo.setsTotal} — the rest need a larger scan.
+              {scanInfo.setsTotal}. The rest need a larger scan.
             </p>
           )}
 
@@ -334,7 +334,7 @@ export default function ScreenerPanel({
               instead of leaving a short list unexplained. */}
           {rows.length > 0 && rows.length < 25 && (
             <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
-              {rows.length} of 25 — only {scanned.length} cards were scanned, and about{' '}
+              {rows.length} of 25. Only {scanned.length} cards were scanned, and about{' '}
               {Math.round((result.matched / scanned.length) * 100)}% pass your filters.
               Scanning about {Math.min(2000, Math.max(50, Math.ceil(25 / Math.max(result.matched / scanned.length, 0.01) / 25) * 25))} cards
               would fill the list.
@@ -349,7 +349,7 @@ export default function ScreenerPanel({
               <button className="ghost small" onClick={() => setHideSuspect(false)}>
                 Show them anyway
               </button>
-              <span className="muted"> — expect bad data rather than bargains.</span>
+              <span className="muted"> Expect bad data rather than bargains.</span>
             </p>
           )}
         </div>
@@ -366,7 +366,7 @@ export default function ScreenerPanel({
                 <th className="num" title="Value of one copy at PSA 10">Graded value</th>
                 <th
                   className="num"
-                  title="PSA 10 sales per week over the tracked window — the figure the filter uses. Beneath it is the card's total rate across all grades and raw, for context."
+                  title="PSA 10 sales per week over the tracked window, the figure the filter uses. Beneath it is the card's total rate across all grades and raw, for context."
                 >
                   PSA 10 / wk
                 </th>
@@ -434,7 +434,7 @@ export default function ScreenerPanel({
                       </div>
                     </td>
                     <td className="num">
-                      {gradeRate != null ? gradeRate.toFixed(1) : '—'}
+                      {gradeRate != null ? gradeRate.toFixed(1) : '–'}
                       <div className="small muted">
                         {volume.overWindow != null
                           ? `${volume.overWindow.toFixed(1)} all grades`

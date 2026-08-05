@@ -93,7 +93,7 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
       </form>
 
       <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
-        Multi-word search works well — include the set name to narrow it down.
+        Multi-word search works well. Include the set name to narrow it down.
       </p>
 
       {results && (
@@ -148,7 +148,7 @@ function Result({ card, onAdd, qtyOf, adding }) {
                   disabled={busy}
                   title={
                     qty > 0
-                      ? `You have ${qty} — click to add another`
+                      ? `You have ${qty}. Click to add another`
                       : 'Add to backlog (2 credits: price + graded sales)'
                   }
                 >

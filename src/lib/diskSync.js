@@ -48,7 +48,7 @@ export function useDiskSync(doc, applyRef, localCardCount = 0) {
             savedAt: null,
             path: null,
             error: emptyDiskWouldWipeBrowser
-              ? `Disk file was empty but this browser held ${localCardCount} card(s) — kept the browser copy and rewrote it to disk.`
+              ? `Disk file was empty but this browser held ${localCardCount} card(s), so the browser copy was kept and rewrote it to disk.`
               : null,
           })
         }

@@ -38,7 +38,7 @@ export const DEFAULT_TARGET_GRADE = 10
 export const SUBMISSION_STATUSES = [
   { id: 'draft', label: 'Draft', hint: 'Still choosing what goes in' },
   { id: 'at-psa', label: 'At PSA', hint: 'Sent and waiting on grades' },
-  { id: 'completed', label: 'Completed', hint: 'Graded and back — moves to the Completed tab' },
+  { id: 'completed', label: 'Completed', hint: 'Graded and back. It moves to the Completed tab' },
 ]
 
 /**
@@ -736,14 +736,14 @@ function num(v) {
 }
 
 export function percent(n, opts = {}) {
-  if (n == null || !Number.isFinite(Number(n))) return '—'
+  if (n == null || !Number.isFinite(Number(n))) return '–'
   const v = Number(n) * 100
   const digits = Math.abs(v) >= 100 ? 0 : opts.digits ?? 0
   return (v > 0 ? '+' : '') + v.toFixed(digits) + '%'
 }
 
 export function money(n, opts = {}) {
-  if (n == null || !Number.isFinite(Number(n))) return '—'
+  if (n == null || !Number.isFinite(Number(n))) return '–'
   const v = Number(n)
   return (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString('en-US', {
     minimumFractionDigits: opts.cents === false ? 0 : 2,

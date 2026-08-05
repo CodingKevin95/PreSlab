@@ -46,7 +46,7 @@ export default function SettingsPanel({
       try {
         const parsed = JSON.parse(reader.result)
         if (!Array.isArray(parsed.cards)) {
-          throw new Error('That file has no cards in it — is it a PreSlab export?')
+          throw new Error('That file has no cards in it. Is it a PreSlab export?')
         }
         onImport(parsed)
       } catch (err) {
@@ -63,7 +63,7 @@ export default function SettingsPanel({
         <h2>Your own API key</h2>
         <p className="sub">
           This app shares one pricing account, so heavy use can run into its daily
-          limit. Paste your own free key and you get your own allowance instead —
+          limit. Paste your own free key and you get your own allowance instead, so
           searches and refreshes stop competing with everyone else&apos;s.
         </p>
         <div className="row wrap">
@@ -96,7 +96,7 @@ export default function SettingsPanel({
           <a href="https://www.pokemonpricetracker.com/api" target="_blank" rel="noreferrer"
              style={{ color: 'var(--accent)' }}>
             pokemonpricetracker.com/api
-          </a>. It is stored in this browser and passed straight through to them —
+          </a>. It is stored in this browser and passed straight through to them, and
           never saved on our side.
         </p>
       </div>

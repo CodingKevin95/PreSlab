@@ -20,7 +20,7 @@ export default function PsaPromo() {
   return (
     <p className="promo">
       Save <b>$25</b> on your first PSA submission with code{' '}
-      <code className="promo-code">Yuri25</code> — new accounts only
+      <code className="promo-code">Yuri25</code>. New accounts only
     </p>
   )
 }

@@ -160,7 +160,7 @@ function CostBasis({ card, a, onPatch }) {
           {!a.hasCost && (
             <div className="muted small calc-note" style={{ marginTop: 6 }}>
               <span>
-                Enter what you paid to see your real profit — until then this
+                Enter what you paid to see your real profit. Until then this
                 assumes market price, so it matches the column on the left.
               </span>
               <span />
@@ -201,7 +201,7 @@ export default function BacklogTable({
           {filtered ? (
             <>
               <p style={{ fontSize: 15, color: 'var(--dim)' }}>No cards match that filter.</p>
-              <p>Your backlog still has everything in it — only the view is narrowed.</p>
+              <p>Your backlog still has everything in it. Only the view is narrowed.</p>
               {query && onAdd && (
                 <button className="primary" style={{ marginTop: 12 }} onClick={() => onAdd(query)}>
                   Search for “{query}” to add it
@@ -392,7 +392,7 @@ function Row({
           className="num grp"
           title={
             a.assumedCount > 0
-              ? `${a.assumedCount} of ${a.qty} assumed at market value — set them in the expanded row`
+              ? `${a.assumedCount} of ${a.qty} assumed at market value. Set them in the expanded row`
               : `Average across ${a.qty} priced cop${a.qty === 1 ? 'y' : 'ies'}`
           }
         >
@@ -456,7 +456,7 @@ function Row({
               className="ghost small"
               onClick={() => loadGrades(false)}
               disabled={loadingGrades}
-              title="Look up eBay graded sale averages for this card — 2 credits"
+              title="Look up eBay graded sale averages for this card, 2 credits"
             >
               {loadingGrades ? 'Loading…' : 'Fetch comps'}
             </button>
@@ -491,11 +491,11 @@ function Row({
           title={
             a.roiVsPaid != null
               ? `${money(a.upliftVsPaid)} back on ${money(a.paidEach + a.gradingCost)} ` +
-                `tied up per copy — ${money(a.paidEach)} paid plus ${money(a.gradingCost)} grading.`
+                `tied up per copy: ${money(a.paidEach)} paid plus ${money(a.gradingCost)} grading.`
               : undefined
           }
         >
-          {a.upliftVsPaid != null ? money(a.upliftVsPaid) : '—'}
+          {a.upliftVsPaid != null ? money(a.upliftVsPaid) : '–'}
           {a.roiVsPaid != null && <div className="cardmeta">{percent(a.roiVsPaid)}</div>}
         </td>
         <td
@@ -503,11 +503,11 @@ function Row({
           title={
             a.proceeds != null
               ? `${money(a.gradedPrice)} less ${Math.round(a.feeRate * 100)}% fees leaves ` +
-                `${money(a.proceeds)}, then grading and what you paid come out — per copy.`
+                `${money(a.proceeds)}, then grading and what you paid come out, per copy.`
               : undefined
           }
         >
-          {a.upliftNetVsPaid != null ? money(a.upliftNetVsPaid) : <span className="muted">—</span>}
+          {a.upliftNetVsPaid != null ? money(a.upliftNetVsPaid) : <span className="muted">–</span>}
           {a.roiNetVsPaid != null && <div className="cardmeta">{percent(a.roiNetVsPaid)}</div>}
         </td>
         <td>
@@ -517,7 +517,7 @@ function Row({
             disabled={loadingGrades || !card.tcgPlayerId}
             title={
               card.tcgPlayerId
-                ? 'Refresh this card only — price and graded sales, 2 credits'
+                ? 'Refresh this card only: price and graded sales, 2 credits'
                 : 'Not linked to the pricing source yet'
             }
           >
@@ -602,7 +602,7 @@ function Row({
                   <>
                     <p className="small muted" style={{ margin: '0 0 8px' }}>
                       {card.gradedFetchedAt
-                        ? 'No PSA sales recorded for this card. Coverage is patchy — plenty of cards have none.'
+                        ? 'No PSA sales recorded for this card. Coverage is patchy, and plenty of cards have none.'
                         : 'Not fetched yet.'}
                     </p>
                     <button onClick={() => loadGrades(false)} disabled={loadingGrades}>

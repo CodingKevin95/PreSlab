@@ -187,7 +187,7 @@ async function request(path, { retried = false } = {}) {
       const at = formatReset(usage.dailyReset)
       throw new ApiError(
         daily
-          ? `Daily credit limit reached — all ${usage.dailyLimit ?? 100} used. ` +
+          ? `Daily credit limit reached: all ${usage.dailyLimit ?? 100} used. ` +
             `It resets at ${at || 'midnight UTC'}. Your backlog and saved prices are unaffected; ` +
             `only new lookups are paused.`
           : 'Too many requests in the last minute. Wait about 30 seconds and try again.',

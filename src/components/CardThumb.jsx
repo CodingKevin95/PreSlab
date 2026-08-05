@@ -42,7 +42,7 @@ export default function CardThumb({ src, alt = '', width = 38, big = false, prev
       <div
         className="thumb-empty"
         style={{ width, height }}
-        title={src ? 'Image failed to load' : 'No image — refresh this card to fetch one'}
+        title={src ? 'Image failed to load' : 'No image. Refresh this card to fetch one'}
         aria-hidden="true"
       />
     )

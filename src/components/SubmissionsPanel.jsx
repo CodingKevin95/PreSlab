@@ -76,7 +76,7 @@ export default function SubmissionsPanel({
 
   function exportAll() {
     const rows = [
-      [`All submissions — exported ${new Date().toLocaleString()}`],
+      [`All submissions, exported ${new Date().toLocaleString()}`],
       [],
       ['Submission', 'Status', ...CSV_HEADERS],
     ]
@@ -448,7 +448,7 @@ function Submission({
           <span className="small muted">
             % hit their target
             {scen && scen.priced > 0 &&
-              ` · ${scen.hits} of ${scen.priced} — the range is which ${scen.hits === 1 ? 'one' : 'ones'}`}
+              ` · ${scen.hits} of ${scen.priced}. The range is which ${scen.hits === 1 ? 'one' : 'ones'}`}
           </span>
           {/* Only offered once there is something measured to offer. Until an
               order has been imported this would be a tickbox for nothing. */}
@@ -515,7 +515,7 @@ function Submission({
               <div className="scen-row scen-head">
                 <span>
                   {openCase === 'worst' ? 'Worst case' : openCase === 'best' ? 'Best case' : 'Expected'}
-                  {' — '}
+                  {': '}
                   {openCase === 'expected'
                     ? `every card blended at ${Math.round(Number(rate) || 0)}%`
                     : `${scen.hits} of ${scen.priced} hit the target`}
@@ -535,7 +535,7 @@ function Submission({
                     {r.blend && (
                       <span className="small muted" style={{ marginLeft: 8 }}>
                         {r.blend.single != null
-                          ? `PSA ${r.blend.single} — no lower comp to fall to`
+                          ? `PSA ${r.blend.single}, no lower comp to fall to`
                           : `${Math.round(r.blend.p * 100)}% PSA ${r.blend.target} · ` +
                             `${Math.round((1 - r.blend.p) * 100)}% PSA ${r.blend.fallback}`}
                       </span>
@@ -564,7 +564,7 @@ function Submission({
           {Number(nextTier.minCards) - units === 1 ? '' : 's'} to unlock
           <b> {nextTier.name}</b> at {money(nextTier.fee)}/card
           {unlocked.length > 0 && (
-            <> — you&apos;re currently paying {money(
+            <>. You&apos;re currently paying {money(
               Math.min(...unlocked.map((t) => Number(t.fee)))
             )}/card at best.</>
           )}
@@ -672,10 +672,10 @@ function Submission({
                     </td>
                     <td>PSA {a.targetGrade}</td>
                     <td className="num grp">
-                      {a.gradedPrice != null ? money(a.gradedPrice) : <span className="muted">—</span>}
+                      {a.gradedPrice != null ? money(a.gradedPrice) : <span className="muted">–</span>}
                     </td>
                     <td className={'num verdict second ' + verdictOf(a.upliftVsPaid)}>
-                      {a.upliftVsPaid != null ? money(a.upliftVsPaid) : '—'}
+                      {a.upliftVsPaid != null ? money(a.upliftVsPaid) : '–'}
                       {a.roiVsPaid != null && (
                         <div className="cardmeta">{percent(a.roiVsPaid)}</div>
                       )}
@@ -689,7 +689,7 @@ function Submission({
                           : undefined
                       }
                     >
-                      {a.lineProfit != null ? money(a.lineProfit / a.qty) : '—'}
+                      {a.lineProfit != null ? money(a.lineProfit / a.qty) : '–'}
                       {a.profitRoi != null && (
                         <div className="cardmeta">{percent(a.profitRoi)}</div>
                       )}
@@ -731,7 +731,7 @@ function Submission({
               className="danger"
               style={{ alignSelf: 'flex-end' }}
               onClick={onDelete}
-              title="Delete this submission — its cards return to the backlog"
+              title="Delete this submission. Its cards return to the backlog"
             >
               Delete
             </button>
@@ -829,7 +829,7 @@ function OrderResults({ results, onSetTarget, onUseRate }) {
           <Mini k="Cards" v={String(s.total)} />
           <Mini
             k="Target grade hit rate"
-            v={s.hitRate != null ? `${Math.round(s.hitRate * 100)}%` : '—'}
+            v={s.hitRate != null ? `${Math.round(s.hitRate * 100)}%` : '–'}
             n={`${s.hits} of ${s.graded} at or above${s.mixedTargets ? ' its own target' : ''}`}
             tone={s.hits > 0 ? 'good' : null}
             lead
@@ -873,7 +873,7 @@ function OrderResults({ results, onSetTarget, onUseRate }) {
                       a 9 is a hit when a 9 is what you wanted. */}
                   <td className="num">
                     <span className={'verdict ' + gradeTone(c)}>
-                      {c.grade ?? '—'}
+                      {c.grade ?? '–'}
                     </span>
                     <div className="cardmeta">{c.gradeLabel}</div>
                   </td>

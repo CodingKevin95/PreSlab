@@ -26,7 +26,7 @@ export default function SubmitDialog({ cards, targetName, onConfirm, onCancel })
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2 style={{ margin: '0 0 4px', fontSize: 15 }}>How many go in {targetName}?</h2>
         <p className="sub" style={{ marginBottom: 16 }}>
-          Send some and keep the rest — anything you hold back stays in the backlog.
+          Send some and keep the rest. Anything you hold back stays in the backlog.
         </p>
 
         <div className="tbl-wrap">

@@ -129,7 +129,7 @@ export function parsePsaOrderCsv(text) {
   // Without a cert and a description there is nothing worth recording, and a
   // file this shape is almost certainly not a PSA order.
   if (iCert === -1 || iDesc === -1) {
-    throw new Error('That does not look like a PSA order CSV — no "Cert #" and "Description" columns.')
+    throw new Error('That does not look like a PSA order CSV. No "Cert #" and "Description" columns.')
   }
 
   const cards = []

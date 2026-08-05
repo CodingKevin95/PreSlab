@@ -33,7 +33,7 @@ export default function Landing() {
         <h2>Every deduction, in the open.</h2>
         <p className="land-body">
           Not a verdict you have to trust. The graded price, the selling fee, the
-          tier fee and what the card is worth raw — laid out so you can see where
+          tier fee and what the card is worth raw, laid out so you can see where
           the number came from and disagree with it.
         </p>
 
@@ -66,7 +66,7 @@ export default function Landing() {
         <h2>Not every card comes back a 10.</h2>
         <p className="land-body">
           Group cards into a submission and set the gem rate you actually expect.
-          You get the worst case, the likely case and the best case — because
+          You get the worst case, the likely case and the best case, because
           planning on everything hitting a 10 is how a profitable submission turns
           into a losing one.
         </p>
