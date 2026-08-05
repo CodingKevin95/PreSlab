@@ -267,11 +267,16 @@ td {
   vertical-align: middle;
 }
 
-/* Marks where one kind of information ends and the next begins: what the card
-   costs, what grading it costs, what it comes back worth. Thirteen evenly
-   spaced columns read as one long undifferentiated strip, and the eye has
-   nothing to anchor to when scanning across a row. */
-th.grp, td.grp { border-left: 1px solid var(--rule); }
+/*
+   Marks where one kind of information ends and the next begins: what the card
+   costs, what grading it costs, what it comes back worth.
+
+   Space rather than a rule. Vertical lines running the height of the table cut
+   across every row, which fights the horizontal reading a table is for -- and
+   once the borders were strong enough to see, they were strong enough to be in
+   the way. A gap groups just as well and draws nothing.
+*/
+th.grp, td.grp { padding-left: 18px; }
 
 /* The card cell collapses to nothing once enough columns compete for width,
    wrapping the name over four lines and making every row tall. Low enough that
