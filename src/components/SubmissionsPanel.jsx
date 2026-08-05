@@ -143,6 +143,7 @@ function Submission({
 }) {
   const [open, setOpen] = useState(true)
   const [openCase, setOpenCase] = useState(null)
+  const [q, setQ] = useState('')
   const ref = useRef(null)
 
   // Arriving from a backlog row: scroll this one into view and flash it, so
@@ -157,6 +158,27 @@ function Submission({
 
   const units = submissionUnits(sub.id, allCards)
   const analyses = cards.map((c) => ({ card: c, a: analyzeCard(c, tiers, settings, units) }))
+
+  /*
+    Narrows the rows on show and nothing else. Every figure above the table --
+    the totals, the scenarios, the tier this batch qualifies for -- describes
+    what is actually being sent, so filtering must not reach them. A profit
+    total that quietly followed the search box would be a different number
+    wearing the same label.
+
+    Same matching as the backlog: every word has to appear somewhere on the
+    card, so extra words narrow rather than broaden.
+  */
+  const terms = q.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  const shown = terms.length
+    ? analyses.filter(({ card }) => {
+        const hay = [
+          card.name, card.setName, card.number, card.rarity,
+          card.printing, card.condition, card.notes,
+        ].filter(Boolean).join(' ').toLowerCase()
+        return terms.every((t) => hay.includes(t))
+      })
+    : analyses
 
   const totals = analyses.reduce(
     (acc, { a }) => ({
@@ -436,7 +458,24 @@ function Submission({
           <div className="sec">
           <div className="sec-head">
             <span className="micro">Cards in this submission</span>
-            <span className="small muted">{units} card{units === 1 ? '' : 's'}</span>
+            <input
+              className="mini"
+              style={{ width: 190 }}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filter these cards…"
+            />
+            {q.trim() && (
+              <button className="ghost small" onClick={() => setQ('')} title="Clear filter">
+                Clear
+              </button>
+            )}
+            <div className="spacer" />
+            <span className="small muted">
+              {terms.length
+                ? `${shown.length} of ${analyses.length} shown`
+                : `${units} card${units === 1 ? '' : 's'}`}
+            </span>
           </div>
           <div className="tbl-wrap">
             <table>
@@ -475,7 +514,7 @@ function Submission({
                 </tr>
               </thead>
               <tbody>
-                {analyses.map(({ card, a }) => (
+                {shown.map(({ card, a }) => (
                   <tr key={card.id}>
                     <td className="card-col">
                       <div className="card-cell">
@@ -543,10 +582,12 @@ function Submission({
                     </td>
                   </tr>
                 ))}
-                {cards.length === 0 && (
+                {shown.length === 0 && (
                   <tr>
                     <td colSpan={10} className="muted small" style={{ textAlign: 'center', padding: 24 }}>
-                      Empty. Tick cards in the backlog and add them here.
+                      {terms.length
+                        ? 'No cards here match that filter — the batch itself is unchanged.'
+                        : 'Empty. Search above, or tick cards in the backlog and add them here.'}
                     </td>
                   </tr>
                 )}
