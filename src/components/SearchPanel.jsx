@@ -49,20 +49,13 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
 
   return (
     <div className={bare ? '' : 'panel'}>
+      {/* The credit explanation that sat here is on the buttons that spend
+          them -- "Search (20 credits)" and the per-card add -- so it was
+          restating what the controls already say. */}
       {!bare && (
-        <>
-          <div className="row" style={{ alignItems: 'flex-start' }}>
-            <h2 className="grow">Add cards</h2>
-          </div>
-          {/* "Six hours" described only this browser's own cache. On the
-              deployed link results are also held for a day at the edge and
-              shared between visitors, so the old wording understated it and
-              named a window that was no longer the whole story. */}
-          <p className="sub">
-            Credits are charged per result, and adding a card costs 2 more for its
-            price plus every graded sale average. Repeating a search is free.
-          </p>
-        </>
+        <div className="row" style={{ alignItems: 'flex-start', marginBottom: 14 }}>
+          <h2 className="grow">Add cards</h2>
+        </div>
       )}
 
       <form className="row wrap" onSubmit={run}>
