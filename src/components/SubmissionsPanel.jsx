@@ -12,7 +12,7 @@ export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
   onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError,
-  completed, onImportOrder, onUseRate, focusId, onFocused,
+  completed, onImportOrder, onUseRate, averageHitRate, focusId, onFocused,
 }) {
   const [q, setQ] = useState('')
 
@@ -150,6 +150,7 @@ export default function SubmissionsPanel({
           onRemoveCards={onRemoveCards}
           onAddCard={onAddCard}
           onUseRate={onUseRate}
+          averageHitRate={averageHitRate}
           qtyOf={qtyOf}
           adding={adding}
           onUsage={onUsage}
@@ -216,7 +217,7 @@ function verdictOf(n) {
 
 function Submission({
   sub, cards, allCards, tiers, settings, onPatch, onDelete, onRemoveCards,
-  onAddCard, qtyOf, adding, onUsage, onError, onUseRate,
+  onAddCard, qtyOf, adding, onUsage, onError, onUseRate, averageHitRate,
   focused, onFocused,
 }) {
   // Collapsed by default: with several batches stacked, opening every one on
@@ -293,8 +294,18 @@ function Submission({
   }
 
   // Only meaningful once a gem rate is entered.
-  const scen = sub.gemRate != null && String(sub.gemRate).trim() !== ''
-    ? gradeScenarios(cards, tiers, settings, units, sub.gemRate)
+  /*
+    What the scenarios actually run on.
+
+    Ticking the box does not overwrite what you typed -- it substitutes the
+    measured rate while it is on, so unticking gives your own figure back
+    rather than having quietly destroyed it.
+  */
+  const useAvg = !!sub.useAverageRate && averageHitRate != null
+  const rate = useAvg ? Math.round(averageHitRate.rate * 100) : sub.gemRate
+
+  const scen = rate != null && String(rate).trim() !== ''
+    ? gradeScenarios(cards, tiers, settings, units, rate)
     : null
 
   return (
@@ -412,16 +423,42 @@ function Submission({
           <input
             className="mini"
             style={{ width: 58, textAlign: 'right' }}
-            value={sub.gemRate ?? ''}
+            value={useAvg ? Math.round(averageHitRate.rate * 100) : (sub.gemRate ?? '')}
             placeholder="%"
+            disabled={useAvg}
             onChange={(e) => onPatch({ gemRate: e.target.value })}
-            title="Share of these cards you expect to come back at the target grade"
+            title={
+              useAvg
+                ? 'Coming from your completed orders. Untick to set it yourself.'
+                : 'Share of these cards you expect to come back at the target grade'
+            }
           />
           <span className="small muted">
             % hit their target
             {scen && scen.priced > 0 &&
               ` · ${scen.hits} of ${scen.priced} — the range is which ${scen.hits === 1 ? 'one' : 'ones'}`}
           </span>
+          {/* Only offered once there is something measured to offer. Until an
+              order has been imported this would be a tickbox for nothing. */}
+          {averageHitRate != null && (
+            <label
+              className="small"
+              style={{ display: 'flex', gap: 6, alignItems: 'center' }}
+              title={
+                `Measured across ${averageHitRate.orders} imported order` +
+                `${averageHitRate.orders === 1 ? '' : 's'}: ` +
+                `${averageHitRate.hits} of ${averageHitRate.graded} cards hit their target.`
+              }
+            >
+              <input
+                type="checkbox"
+                style={{ width: 'auto' }}
+                checked={useAvg}
+                onChange={(e) => onPatch({ useAverageRate: e.target.checked })}
+              />
+              Use my average ({Math.round(averageHitRate.rate * 100)}%)
+            </label>
+          )}
         </div>
 
       {scen && (
@@ -442,7 +479,7 @@ function Submission({
             <Mini
               k="Expected"
               v={money(scen.expected, { cents: false })}
-              n={`each card at ${Math.round(Number(sub.gemRate) || 0)}%`}
+              n={`each card at ${Math.round(Number(rate) || 0)}%`}
               tone={scen.expected > 0 ? 'good' : scen.expected < 0 ? 'bad' : null}
               open={openCase === 'expected'}
               onClick={() => setOpenCase(openCase === 'expected' ? null : 'expected')}
@@ -468,7 +505,7 @@ function Submission({
                   {openCase === 'worst' ? 'Worst case' : openCase === 'best' ? 'Best case' : 'Expected'}
                   {' — '}
                   {openCase === 'expected'
-                    ? `every card blended at ${Math.round(Number(sub.gemRate) || 0)}%`
+                    ? `every card blended at ${Math.round(Number(rate) || 0)}%`
                     : `${scen.hits} of ${scen.priced} hit the target`}
                 </span>
                 <span>profit</span>

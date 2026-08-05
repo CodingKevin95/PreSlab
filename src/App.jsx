@@ -8,6 +8,7 @@ import {
 import SubmissionsPanel from './components/SubmissionsPanel'
 import SubmitDialog from './components/SubmitDialog'
 import { refreshPrices, getCard, searchCards, mapPool } from './api/pricetracker'
+import { summariseOrder } from './lib/psaOrder'
 
 // Identity is TCGplayer product id + printing: the same card in Holofoil and
 // Reverse Holofoil are different things to own and to grade.
@@ -486,6 +487,27 @@ export default function App() {
   // Completed batches are finished business. They stay in the data -- their
   // cards are still submitted and still counted -- but they leave the working
   // list so it only shows what is still in play.
+  /**
+   * How often your cards actually hit the grade you were after, across every
+   * order you have imported.
+   *
+   * Pooled -- total hits over total cards -- rather than averaging each order's
+   * percentage. A 45-card order and a 5-card order are not equally good
+   * evidence, and averaging the two rates would let the small one move your
+   * planning figure as much as the large one.
+   */
+  const averageHitRate = useMemo(() => {
+    let hits = 0
+    let graded = 0
+    for (const s of submissions) {
+      if (!s.results) continue
+      const r = summariseOrder(s.results)
+      hits += r.hits
+      graded += r.graded
+    }
+    return graded ? { rate: hits / graded, hits, graded, orders: submissions.filter((s) => s.results).length } : null
+  }, [submissions])
+
   const activeSubs = useMemo(() => submissions.filter((s) => !isCompleted(s)), [submissions])
   const doneSubs = useMemo(() => submissions.filter(isCompleted), [submissions])
 
@@ -1047,6 +1069,7 @@ export default function App() {
           onRemoveCards={removeFromSubmission}
           onGoToBacklog={() => setTab('backlog')}
           onAddCard={addCard}
+          averageHitRate={averageHitRate}
           onUseRate={(pct) => {
             setSettings({ ...settings, defaultGemRate: String(pct) })
             setNotice(`New submissions will start at ${pct}%.`)
@@ -1068,6 +1091,7 @@ export default function App() {
       {tab === 'completed' && (
         <SubmissionsPanel
           completed
+          averageHitRate={averageHitRate}
           onUseRate={(pct) => {
             setSettings({ ...settings, defaultGemRate: String(pct) })
             setNotice(`New submissions will start at ${pct}%.`)
