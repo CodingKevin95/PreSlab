@@ -7,4 +7,7 @@ dist
 .DS_Store
 
 # local backlog data (contains your card list)
-data/
+# Anchored to the root on purpose. Without the leading slash git applies the
+# rule at every level, which also caught public/data/ and kept the shipped
+# price snapshot out of every deploy.
+/data/
