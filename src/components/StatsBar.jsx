@@ -10,28 +10,28 @@ export default function StatsBar({ roll }) {
         v={String(roll.count)}
         n={roll.lines !== roll.count ? `${roll.lines} unique` : 'in backlog'}
       />
-      {/* The count of assumed copies stays alongside the plain description.
-          Most of this total is usually market value rather than money that
-          actually left your pocket, and a tile reading only "how much you
-          spent" over $15,840 would state that as fact. */}
+      {/* The heading says what the number is; the caption carries the caveat
+          that qualifies it. Most of this total is usually market value rather
+          than money that left your pocket, so a tile headed "how much you
+          spent" needs that said underneath rather than dropped. */}
       <Stat
-        k="Spent"
+        k="How much you spent"
         v={money(roll.spentTotal, { cents: false })}
         n={
           roll.assumedUnits > 0
-            ? `how much you spent · ${roll.assumedUnits} of ${roll.count} at market value`
-            : 'how much you spent'
+            ? `${roll.assumedUnits} of ${roll.count} at market value`
+            : 'what you actually paid'
         }
       />
       <Stat
-        k="Raw value"
+        k="Raw market value"
         v={money(roll.rawTotal, { cents: false })}
         n={
           roll.prices
             // The oldest price is what limits the total's freshness, so that
             // is the one worth naming.
-            ? `raw market value · priced ${agoLabel(roll.prices.oldest)}`
-            : 'raw market value'
+            ? `if sold ungraded · priced ${agoLabel(roll.prices.oldest)}`
+            : 'if sold ungraded'
         }
       />
       <Stat k="Grading cost" v={money(roll.costTotal, { cents: false })} n="PSA fees" />
