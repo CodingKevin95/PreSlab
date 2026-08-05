@@ -185,7 +185,7 @@ function Submission({
   function exportCsv() {
     const rows = [
       [`Submission: ${sub.name}`],
-      [`Status: ${status.label}`, `Cards: ${units}`, `Tracking: ${sub.tracking || ''}`],
+      [`Status: ${status.label}`, `Cards: ${units}`, `Submission #: ${sub.tracking || ''}`],
       [`Exported: ${new Date().toLocaleString()}`],
       [],
       CSV_HEADERS,
@@ -539,22 +539,18 @@ function Submission({
           </div>
 
           <div className="row wrap" style={{ marginTop: 28, gap: 12 }}>
-            <div style={{ width: 240 }}>
-              <label className="small muted">Tracking / submission number</label>
+            {/* Still stored under `tracking`, which is what every existing
+                submission already uses -- renaming the key would orphan the
+                numbers people have entered. */}
+            <div style={{ width: 260 }}>
+              <label className="small muted">Submission number</label>
               <input
                 value={sub.tracking || ''}
-                placeholder="e.g. 1Z999… or PSA order #"
+                placeholder="PSA order #"
                 onChange={(e) => onPatch({ tracking: e.target.value })}
               />
             </div>
-            <div className="grow">
-              <label className="small muted">Notes</label>
-              <input
-                value={sub.notes || ''}
-                placeholder="What's in this batch, why, when it shipped…"
-                onChange={(e) => onPatch({ notes: e.target.value })}
-              />
-            </div>
+            <div className="grow" />
             <button
               style={{ alignSelf: 'flex-end' }}
               onClick={exportCsv}

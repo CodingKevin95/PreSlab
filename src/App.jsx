@@ -434,7 +434,6 @@ export default function App() {
       createdAt: Date.now(),
       status: 'draft',
       tracking: '',
-      notes: '',
     }
     setSubmissions((prev) => [sub, ...prev])
     // Skipped when empty: it would walk every card to move none of them, and
