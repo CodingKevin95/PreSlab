@@ -344,8 +344,12 @@ function Row({
           />
         </td>
         <td>
-          <button className="ghost" onClick={onToggle} title={open ? 'Collapse' : 'Expand'}>
-            {open ? '▾' : '▸'}
+          <button
+            className="ghost disclose"
+            onClick={onToggle}
+            title={open ? 'Hide details' : 'Show details'}
+          >
+            {open ? '−' : '+'}
           </button>
         </td>
         <td className="card-col">

@@ -210,8 +210,13 @@ function Submission({
   return (
     <div className={'panel' + (focused ? ' flash' : '')} ref={ref}>
       <div className="row wrap" style={{ alignItems: 'flex-start' }}>
-        <button className="ghost" onClick={() => setOpen(!open)} style={{ marginTop: 2 }}>
-          {open ? '▾' : '▸'}
+        <button
+          className="ghost disclose"
+          onClick={() => setOpen(!open)}
+          style={{ marginTop: 2 }}
+          title={open ? 'Collapse this submission' : 'Expand this submission'}
+        >
+          {open ? '−' : '+'}
         </button>
 
         <div className="grow">
@@ -584,7 +589,7 @@ function Mini({ k, v, n, tone, open, onClick }) {
     >
       <div className="k">
         {k}
-        {onClick && <span className="stat-caret">{open ? '▾' : '▸'}</span>}
+        {onClick && <span className="stat-caret">{open ? '−' : '+'}</span>}
       </div>
       <div className={'v' + (tone ? ' ' + tone : '')} style={{ fontSize: 18 }}>{v}</div>
       {n && <div className="n">{n}</div>}
