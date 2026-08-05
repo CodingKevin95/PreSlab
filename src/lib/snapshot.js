@@ -63,6 +63,19 @@ export function loadSnapshot() {
       return index
     })
     .catch(() => null)
+    .then((result) => {
+      /*
+        A failed attempt must not be remembered.
+
+        The in-flight promise is kept so concurrent callers share one request,
+        but holding it after a failure meant the first miss was permanent: a tab
+        opened before the file was deployed would keep answering "no snapshot"
+        from that one stale rejection, and every lookup would go to the API for
+        the life of the page.
+      */
+      if (!result) loading = null
+      return result
+    })
 
   return loading
 }

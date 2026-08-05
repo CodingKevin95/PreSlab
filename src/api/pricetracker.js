@@ -266,7 +266,13 @@ async function request(path, { retried = false } = {}) {
           ? `Daily credit limit reached: all ${usage.dailyLimit ?? 100} used. ` +
             `It resets at ${at || 'midnight UTC'}. Your backlog and saved prices are unaffected; ` +
             `only new lookups are paused.`
-          : 'Too many requests in the last minute. Wait about 30 seconds and try again.',
+          // Says when, rather than guessing at thirty seconds: the API reports
+          // its own reset, and "try again in 12 seconds" is actionable where a
+          // round number that may already have passed is not.
+          : usage.minuteReset
+            ? `The minute's request allowance is used up. It resets in ` +
+              `${Math.max(1, Math.ceil(usage.minuteReset - Date.now() / 1000))} seconds.`
+            : 'Too many requests in the last minute. Wait a moment and try again.',
         { status: 429, kind: daily ? 'daily' : 'minute', resetAt: usage.dailyReset, usage }
       )
     }
