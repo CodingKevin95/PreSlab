@@ -283,13 +283,23 @@ export default function App() {
    * otherwise we spend the 2 credits to pull fresh pricing plus every graded
    * sale average, so a new card lands fully populated rather than blank.
    */
-  const addCard = useCallback(async (card, printing) => {
+  /**
+   * @param intoSubmission Add straight into this submission rather than the
+   *   loose backlog.
+   *
+   * A card in a submission is a backlog card carrying that submission's id, so
+   * nothing has to be copied or kept in step -- one row is in both places by
+   * construction, and it shows up in the backlog with a Submitted status.
+   */
+  const addCard = useCallback(async (card, printing, intoSubmission = null) => {
     const k = keyOf(card.tcgPlayerId, printing.printing)
 
-    // Only ever grow the backlog row -- adding a copy must not quietly change
-    // what is already committed to a submission.
+    // Grow the row that is already in the same place. Adding a copy to a
+    // submission must not quietly change what is sitting loose in the backlog,
+    // and vice versa.
     const existing = cards.find(
-      (c) => keyOf(c.tcgPlayerId, c.printing) === k && !c.submissionId
+      (c) => keyOf(c.tcgPlayerId, c.printing) === k
+        && (c.submissionId || null) === intoSubmission
     )
     if (existing) {
       patchCard(existing.id, { qty: Math.max(1, parseInt(existing.qty, 10) || 1) + 1 })
@@ -328,7 +338,7 @@ export default function App() {
           declaredValue: '',
           tierId: null,
           targetGrade: DEFAULT_TARGET_GRADE,
-          submissionId: null,
+          submissionId: intoSubmission,
           notes: '',
           gradedPrices: psa ? Object.fromEntries(Object.entries(psa).map(([g, v]) => [g, v.price])) : {},
           gradedMeta: psa || {},
@@ -1006,6 +1016,11 @@ export default function App() {
           onDeleteSubmission={deleteSubmission}
           onRemoveCards={removeFromSubmission}
           onGoToBacklog={() => setTab('backlog')}
+          onAddCard={addCard}
+          qtyOf={qtyOf}
+          adding={adding}
+          onUsage={handleUsage}
+          onError={reportError}
           focusId={focusSubmission}
           onFocused={() => setFocusSubmission(null)}
         />

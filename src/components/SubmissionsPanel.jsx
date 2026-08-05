@@ -4,10 +4,12 @@ import {
   priceAsOf, agoLabel, SUBMISSION_STATUSES, tierForDeclaredValue,
 } from '../lib/psa'
 import CardThumb from './CardThumb'
+import SearchPanel from './SearchPanel'
 
 export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
+  onAddCard, qtyOf, adding, onUsage, onError,
   focusId, onFocused,
 }) {
 
@@ -67,6 +69,11 @@ export default function SubmissionsPanel({
           onPatch={(patch) => onPatchSubmission(s.id, patch)}
           onDelete={() => onDeleteSubmission(s.id)}
           onRemoveCards={onRemoveCards}
+          onAddCard={onAddCard}
+          qtyOf={qtyOf}
+          adding={adding}
+          onUsage={onUsage}
+          onError={onError}
           focused={focusId === s.id}
           onFocused={onFocused}
         />
@@ -129,6 +136,7 @@ function verdictOf(n) {
 
 function Submission({
   sub, cards, allCards, tiers, settings, onPatch, onDelete, onRemoveCards,
+  onAddCard, qtyOf, adding, onUsage, onError,
   focused, onFocused,
 }) {
   const [open, setOpen] = useState(true)
@@ -378,6 +386,29 @@ function Submission({
 
       {open && (
         <>
+          {/*
+            Adds straight into this batch rather than the loose backlog. The
+            same component the backlog uses, so a card added here is fetched,
+            priced and deduplicated exactly as it would be there -- and appears
+            in the backlog too, since a submitted card is a backlog card
+            carrying this submission's id.
+          */}
+          {onAddCard && (
+            <div className="sec">
+              <div className="sec-head">
+                <span className="micro">Add cards to this submission</span>
+              </div>
+              <SearchPanel
+                bare
+                onAdd={(card, printing) => onAddCard(card, printing, sub.id)}
+                qtyOf={qtyOf}
+                adding={adding}
+                onUsage={onUsage}
+                onError={onError}
+              />
+            </div>
+          )}
+
           <div className="sec">
           <div className="sec-head">
             <span className="micro">Cards in this submission</span>

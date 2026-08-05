@@ -3,7 +3,7 @@ import { searchCards } from '../api/pricetracker'
 import { money } from '../lib/psa'
 import CardThumb from './CardThumb'
 
-export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, seed }) {
+export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, seed, bare }) {
   const [q, setQ] = useState(seed || '')
 
   /**
@@ -48,15 +48,19 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
   }
 
   return (
-    <div className="panel">
-      <div className="row" style={{ alignItems: 'flex-start' }}>
-        <h2 className="grow">Add cards</h2>
-      </div>
-      <p className="sub">
-        Credits are charged per result, and adding a card costs 2 more for its price
-        plus every graded sale average. Results cache for six hours, so repeating a
-        search is free.
-      </p>
+    <div className={bare ? '' : 'panel'}>
+      {!bare && (
+        <>
+          <div className="row" style={{ alignItems: 'flex-start' }}>
+            <h2 className="grow">Add cards</h2>
+          </div>
+          <p className="sub">
+            Credits are charged per result, and adding a card costs 2 more for its
+            price plus every graded sale average. Results cache for six hours, so
+            repeating a search is free.
+          </p>
+        </>
+      )}
 
       <form className="row wrap" onSubmit={run}>
         <div className="grow">
