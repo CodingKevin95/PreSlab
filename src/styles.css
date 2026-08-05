@@ -635,3 +635,23 @@ td.num .cardmeta { white-space: nowrap; }
 @media (max-width: 640px) {
   .land-hero, .land-panel { min-height: 0; padding: 64px 20px; }
 }
+
+/*
+   Named blocks inside a panel.
+
+   A submission was a vertical run of unlabelled strips -- tiles, a stray
+   control, more tiles, a table -- with nothing saying where one idea stopped
+   and the next began. A heading and a rule per block does what a dashboard
+   does with separate titled cards, without spending the width that real cards
+   would cost.
+*/
+.sec { margin-top: var(--sp-5); }
+.sec:first-of-type { margin-top: var(--sp-4); }
+.sec-head {
+  display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--rule-faint);
+}
+/* The heading holds its ground when a control sits beside it. */
+.sec-head .micro { flex: none; }

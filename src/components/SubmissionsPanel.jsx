@@ -229,7 +229,9 @@ function Submission({
         </select>
       </div>
 
-      <div className="stats" style={{ marginTop: 24 }}>
+      <div className="sec">
+        <div className="sec-head"><span className="micro">If every card hits its target</span></div>
+        <div className="stats">
         <Mini k="Cards" v={String(units)} />
         <Mini
           k="Spent"
@@ -251,32 +253,34 @@ function Submission({
           n="if every card hits its target grade · after fees, grading and what you paid"
           tone={totals.profit > 0 ? 'good' : totals.profit < 0 ? 'bad' : null}
         />
+        </div>
       </div>
 
       {/*
         Everything above assumes the target grade comes back. That is the best
         case, not the likely one, so a gem rate turns it into a range.
       */}
-      <div className="row wrap" style={{ marginTop: 28, gap: 10, alignItems: 'center' }}>
-        <label className="small muted">Gem rate</label>
-        <input
-          className="mini"
-          style={{ width: 62, textAlign: 'right' }}
-          value={sub.gemRate ?? ''}
-          placeholder="%"
-          onChange={(e) => onPatch({ gemRate: e.target.value })}
-          title="Share of these cards you expect to come back at the target grade"
-        />
-        <span className="small muted">
-          % hit their target grade
-          {scen && scen.priced > 0 &&
-            ` · ${scen.hits} of ${scen.priced} — the range below is which ${scen.hits === 1 ? 'one' : 'ones'}`}
-        </span>
-      </div>
+      <div className="sec">
+        <div className="sec-head">
+          <span className="micro">If some of them miss</span>
+          <input
+            className="mini"
+            style={{ width: 58, textAlign: 'right' }}
+            value={sub.gemRate ?? ''}
+            placeholder="%"
+            onChange={(e) => onPatch({ gemRate: e.target.value })}
+            title="Share of these cards you expect to come back at the target grade"
+          />
+          <span className="small muted">
+            % hit their target
+            {scen && scen.priced > 0 &&
+              ` · ${scen.hits} of ${scen.priced} — the range is which ${scen.hits === 1 ? 'one' : 'ones'}`}
+          </span>
+        </div>
 
       {scen && (
         <>
-          <div className="stats" style={{ marginTop: 14 }}>
+          <div className="stats">
             <Mini
               k="Worst case"
               v={money(scen.worst, { cents: false })}
@@ -357,6 +361,7 @@ function Submission({
           scenario rather than guessed at.
         </p>
       )}
+      </div>
 
       {nextTier && (
         <div className="banner info" style={{ marginTop: 12, marginBottom: 0 }}>
@@ -373,7 +378,12 @@ function Submission({
 
       {open && (
         <>
-          <div className="tbl-wrap" style={{ marginTop: 28 }}>
+          <div className="sec">
+          <div className="sec-head">
+            <span className="micro">Cards in this submission</span>
+            <span className="small muted">{units} card{units === 1 ? '' : 's'}</span>
+          </div>
+          <div className="tbl-wrap">
             <table>
               <thead>
                 <tr>
@@ -487,6 +497,7 @@ function Submission({
                 )}
               </tbody>
             </table>
+          </div>
           </div>
 
           <div className="row wrap" style={{ marginTop: 28, gap: 12 }}>
