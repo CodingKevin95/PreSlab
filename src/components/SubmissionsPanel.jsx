@@ -820,7 +820,6 @@ function OrderResults({ results, onSetTarget, onSetAllTargets, onUseRate }) {
                 <th>Cert #</th>
                 <th className="num">Grade</th>
                 <th>Target</th>
-                <th>After service</th>
               </tr>
             </thead>
             <tbody>
@@ -854,7 +853,6 @@ function OrderResults({ results, onSetTarget, onSetAllTargets, onUseRate }) {
                       ))}
                     </select>
                   </td>
-                  <td className="small muted">{c.service || '—'}</td>
                 </tr>
               ))}
             </tbody>
