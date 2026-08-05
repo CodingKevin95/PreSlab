@@ -89,9 +89,26 @@ let recentRequests = (load(RATE_KEY, []) || []).filter(
   (t) => Number.isFinite(t) && Date.now() - t < RATE_WINDOW_MS
 )
 
+/*
+  Set when the API reports it is out of per-minute allowance, and cleared by
+  time passing.
+
+  Counting our own requests is not enough on its own: the key is shared, so a
+  visitor on the deployed site and this browser both spend the same sixty a
+  minute and neither can see the other. The API's own remaining count is the
+  only figure that sees all of it.
+*/
+let pauseUntil = 0
+
 async function acquireSlot() {
   for (;;) {
     const now = Date.now()
+
+    if (now < pauseUntil) {
+      await sleep(pauseUntil - now + 50)
+      continue
+    }
+
     recentRequests = recentRequests.filter((t) => now - t < RATE_WINDOW_MS)
     if (recentRequests.length < RATE_MAX) {
       recentRequests.push(now)
@@ -158,6 +175,7 @@ async function request(path, { retried = false } = {}) {
     dailyLimit: numOrNull(res.headers.get('x-ratelimit-daily-limit')),
     dailyRemaining: numOrNull(res.headers.get('x-ratelimit-daily-remaining')),
     minuteRemaining: numOrNull(res.headers.get('x-ratelimit-minute-remaining')),
+    minuteReset: numOrNull(res.headers.get('x-ratelimit-minute-reset')),
     dailyReset: numOrNull(res.headers.get('x-ratelimit-daily-reset')),
     consumed: numOrNull(res.headers.get('x-api-calls-consumed')),
     // Set by the relay when running on the shared trial key. Absent when the
@@ -172,9 +190,24 @@ async function request(path, { retried = false } = {}) {
     // failing a batch the user then has to restart by hand. Daily exhaustion
     // is not retryable and falls through.
     if (res.status === 429 && usage.dailyRemaining !== 0 && !retried) {
-      await sleep(RATE_WINDOW_MS / 2)
-      recentRequests = []
-      save(RATE_KEY, recentRequests)
+      /*
+        Wait for the window the API says it is using, not a guess.
+
+        This used to sleep thirty seconds and then empty the local window. Both
+        were wrong. Thirty seconds can land inside a minute that has not reset,
+        and clearing the window threw away the pacing for every request still
+        queued behind this one -- so a refresh of a hundred cards would come
+        back and immediately fire another burst, hit the limit again, and this
+        time have no retry left.
+
+        Pausing every caller until the reset instead means the queue resumes
+        together, in order, with the limiter's history intact.
+      */
+      pauseUntil = Math.max(
+        pauseUntil,
+        usage.minuteReset ? usage.minuteReset * 1000 + 250 : Date.now() + RATE_WINDOW_MS
+      )
+      await sleep(Math.max(0, pauseUntil - Date.now()))
       return request(path, { retried: true })
     }
 
@@ -196,6 +229,18 @@ async function request(path, { retried = false } = {}) {
     }
     const msg = json?.error || json?.message || `Request failed (${res.status})`
     throw new ApiError(msg, { status: res.status })
+  }
+
+  /*
+    Hold everyone back when the API says it is nearly out for this minute.
+
+    A CDN hit does not touch the API, so the local counter drifts high while
+    the real allowance drifts low, and the two can disagree in either direction.
+    Believing the API here means a batch pauses before it is refused rather
+    than after.
+  */
+  if (usage.minuteRemaining != null && usage.minuteRemaining <= 2 && usage.minuteReset) {
+    pauseUntil = Math.max(pauseUntil, usage.minuteReset * 1000 + 250)
   }
 
   /**
