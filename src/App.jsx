@@ -174,16 +174,16 @@ export default function App() {
   // The add-cards panel lives inside the backlog now. It stays collapsed so
   // one search box is obviously primary -- filtering what you own is free,
   // searching the API costs credits, and the two should not look alike.
-  const [addOpen, setAddOpen] = useState(false)
   const [addSeed, setAddSeed] = useState('')
   // Screener results live here rather than in the panel, which unmounts when
   // you switch tabs. Losing them meant re-running a scan that had already
   // been paid for, every time you looked away.
   const [screenerCache, setScreenerCache] = useState(null)
 
+  // Carries a term into the always-visible search box, from the empty state or
+  // from a filter that matched nothing.
   const openAdd = useCallback((seed = '') => {
     setAddSeed(seed)
-    setAddOpen(true)
   }, [])
 
   // An empty tier list leaves the tier dropdown with nothing to choose and
@@ -826,17 +826,14 @@ export default function App() {
             </div>
           )}
 
-          {addOpen && (
-            <SearchPanel
-              onAdd={addCard}
-              qtyOf={qtyOf}
-              adding={adding}
-              onUsage={handleUsage}
-              onError={reportError}
-              seed={addSeed}
-              onClose={() => setAddOpen(false)}
-            />
-          )}
+          <SearchPanel
+            onAdd={addCard}
+            qtyOf={qtyOf}
+            adding={adding}
+            onUsage={handleUsage}
+            onError={reportError}
+            seed={addSeed}
+          />
 
           <div style={{ marginBottom: 16 }}>
             <StatsBar roll={roll} />
@@ -887,11 +884,6 @@ export default function App() {
               </span>
             )}
             <div className="spacer" />
-            {!addOpen && (
-              <button className="primary" onClick={() => openAdd(query)}>
-                + Add cards
-              </button>
-            )}
             <span className="small muted">
               {cards.length > 0 &&
                 `${new Set(cards.map((c) => c.tcgPlayerId).filter(Boolean)).size} credits to refresh all`}

@@ -1,10 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { searchCards } from '../api/pricetracker'
 import { money } from '../lib/psa'
 import CardThumb from './CardThumb'
 
-export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, seed, onClose }) {
+export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, seed }) {
   const [q, setQ] = useState(seed || '')
+
+  /**
+   * Adopts a term handed in from elsewhere -- the empty backlog, or a filter
+   * that matched nothing offering to search the API instead.
+   *
+   * Needed because this panel is now permanently mounted. It used to be
+   * created fresh each time it was opened, so the initial state above was
+   * enough; left as it was, those prompts would set a term the box never
+   * picked up and appear to do nothing.
+   */
+  useEffect(() => {
+    if (seed) setQ(seed)
+  }, [seed])
   const [limit, setLimit] = useState(20)
   // English and Japanese are separate collections in this API -- a Japanese
   // card simply does not appear in an English query.
@@ -38,9 +51,6 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
     <div className="panel">
       <div className="row" style={{ alignItems: 'flex-start' }}>
         <h2 className="grow">Add cards</h2>
-        {onClose && (
-          <button className="ghost" onClick={onClose} title="Close">✕</button>
-        )}
       </div>
       <p className="sub">
         Credits are charged per result, and adding a card costs 2 more for its price
