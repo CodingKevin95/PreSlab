@@ -754,7 +754,7 @@ export default function App() {
     <div className="app">
       <div className="topbar">
         <div className="brand">
-          PreSlab<span>is it worth grading?</span>
+          PreSlab
         </div>
         <div className="spacer" />
         <SaveState disk={disk} />

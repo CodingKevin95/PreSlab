@@ -243,7 +243,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-
    sideways scrolling. */
 th {
   text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
-  color: var(--dim); font-weight: 600; padding: 9px 6px; white-space: nowrap;
+  color: var(--dim); font-weight: 600; padding: var(--sp-3) 6px; white-space: nowrap;
   /* Pinned so the column names stay readable however far you scroll. Uses a
      shadow rather than a border because borders detach from sticky cells. */
   position: sticky;
@@ -254,7 +254,7 @@ th {
 }
 th.num, td.num { text-align: right; }
 td {
-  padding: var(--sp-2) 6px;
+  padding: var(--sp-3) 6px;
   border-bottom: 1px solid var(--rule-faint);
   vertical-align: middle;
 }

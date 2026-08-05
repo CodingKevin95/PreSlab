@@ -229,7 +229,7 @@ function Submission({
         </select>
       </div>
 
-      <div className="stats" style={{ marginTop: 14 }}>
+      <div className="stats" style={{ marginTop: 24 }}>
         <Mini k="Cards" v={String(units)} />
         <Mini
           k="Spent"
@@ -257,7 +257,7 @@ function Submission({
         Everything above assumes the target grade comes back. That is the best
         case, not the likely one, so a gem rate turns it into a range.
       */}
-      <div className="row wrap" style={{ marginTop: 14, gap: 10, alignItems: 'center' }}>
+      <div className="row wrap" style={{ marginTop: 28, gap: 10, alignItems: 'center' }}>
         <label className="small muted">Gem rate</label>
         <input
           className="mini"
@@ -276,7 +276,7 @@ function Submission({
 
       {scen && (
         <>
-          <div className="stats" style={{ marginTop: 10 }}>
+          <div className="stats" style={{ marginTop: 14 }}>
             <Mini
               k="Worst case"
               v={money(scen.worst, { cents: false })}
@@ -373,7 +373,7 @@ function Submission({
 
       {open && (
         <>
-          <div className="tbl-wrap" style={{ marginTop: 14 }}>
+          <div className="tbl-wrap" style={{ marginTop: 28 }}>
             <table>
               <thead>
                 <tr>
@@ -489,7 +489,7 @@ function Submission({
             </table>
           </div>
 
-          <div className="row wrap" style={{ marginTop: 14 }}>
+          <div className="row wrap" style={{ marginTop: 28, gap: 12 }}>
             <div style={{ width: 240 }}>
               <label className="small muted">Tracking / submission number</label>
               <input
