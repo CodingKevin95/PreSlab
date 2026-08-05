@@ -669,14 +669,25 @@ td.num .cardmeta { white-space: nowrap; }
 /* The heading holds its ground when a control sits beside it. */
 .sec-head .micro { flex: none; }
 
-/* Disclosure toggles. A plus and minus at body weight read as punctuation, so
-   they are set larger and lighter than the text beside them to look like a
-   control rather than a stray character. */
+/*
+   Disclosure toggles.
+
+   A square that inherits the standard button surface and border, so it reads
+   as something to press. As a bare glyph it was indistinguishable from the
+   text beside it -- nothing said it could be clicked until you happened to
+   hover it.
+*/
 .disclose {
-  font-size: 17px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
   line-height: 1;
-  font-weight: 400;
-  padding: 2px 8px;
+  font-weight: 500;
+  border-radius: 7px;
   color: var(--dim);
 }
 .disclose:hover:not(:disabled) { color: var(--text); }

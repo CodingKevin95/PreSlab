@@ -239,7 +239,7 @@ export default function BacklogTable({
                   title={allSelected ? 'Clear selection' : 'Select all shown'}
                 />
               </th>
-              <th style={{ width: 28 }}></th>
+              <th style={{ width: 40 }}></th>
               <th className="card-col">Card</th>
               <th className="num qty-col" title="How many copies of this exact card you own">Qty</th>
               <th>Status</th>
@@ -345,7 +345,7 @@ function Row({
         </td>
         <td>
           <button
-            className="ghost disclose"
+            className="disclose"
             onClick={onToggle}
             title={open ? 'Hide details' : 'Show details'}
           >

@@ -211,7 +211,7 @@ function Submission({
     <div className={'panel' + (focused ? ' flash' : '')} ref={ref}>
       <div className="row wrap" style={{ alignItems: 'flex-start' }}>
         <button
-          className="ghost disclose"
+          className="disclose"
           onClick={() => setOpen(!open)}
           style={{ marginTop: 2 }}
           title={open ? 'Collapse this submission' : 'Expand this submission'}
