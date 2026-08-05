@@ -149,7 +149,13 @@ select.mini { padding: 4px 26px 4px 8px; }
   margin-bottom: var(--sp-5);
   border-bottom: 1px solid var(--rule-faint);
 }
-.brand { font-size: 17px; font-weight: 650; letter-spacing: -.2px; color: var(--text); }
+/* Now a link, so it needs the underline removed and something on hover to say
+   it is one. */
+.brand {
+  font-size: 17px; font-weight: 650; letter-spacing: -.2px;
+  color: var(--text); text-decoration: none;
+}
+a.brand:hover { color: var(--dim); }
 .brand span { color: var(--dimmer); font-weight: 400; margin-left: 8px; font-size: 13px; }
 .spacer { flex: 1; }
 

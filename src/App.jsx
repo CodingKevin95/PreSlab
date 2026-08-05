@@ -808,9 +808,12 @@ export default function App() {
   return (
     <div className="app">
       <div className="topbar">
-        <div className="brand">
+        {/* A real link rather than a click handler: the two pages are separate
+            routes, so this has to be something you can middle-click, open in a
+            new tab, or copy the address of. */}
+        <a className="brand" href="/" title="Back to the PreSlab intro">
           PreSlab
-        </div>
+        </a>
         <div className="spacer" />
         <SaveState disk={disk} />
         {/*
