@@ -219,7 +219,10 @@ function Submission({
   onAddCard, qtyOf, adding, onUsage, onError, onUseRate,
   focused, onFocused,
 }) {
-  const [open, setOpen] = useState(true)
+  // Collapsed by default: with several batches stacked, opening every one on
+  // arrival buries the list you came to read. Arriving from a backlog link, or
+  // creating one, still opens it -- see the focus effect below.
+  const [open, setOpen] = useState(false)
   const [openCase, setOpenCase] = useState(null)
   const ref = useRef(null)
 
@@ -232,6 +235,11 @@ function Submission({
     const t = setTimeout(() => onFocused?.(), 1400)
     return () => clearTimeout(t)
   }, [focused, onFocused])
+
+  // An imported order holds graded results instead of backlog cards, and the
+  // collapsed preview has to describe whichever this is -- reading only the
+  // cards made every imported order claim to be empty.
+  const peek = sub.results || cards
 
   const units = submissionUnits(sub.id, allCards)
   const analyses = cards.map((c) => ({ card: c, a: analyzeCard(c, tiers, settings, units) }))
@@ -305,8 +313,11 @@ function Submission({
             style={{ fontWeight: 600, fontSize: 15, border: '1px solid transparent', background: 'transparent', padding: '2px 4px' }}
           />
           <div className="cardmeta" style={{ paddingLeft: 5 }}>
-            {units} card{units === 1 ? '' : 's'} · {cards.length} unique ·
-            created {new Date(sub.createdAt).toLocaleDateString()}
+            {sub.results
+              ? `${sub.results.length} graded card${sub.results.length === 1 ? '' : 's'}`
+              : `${units} card${units === 1 ? '' : 's'} · ${cards.length} unique`}
+            {' · created '}
+            {new Date(sub.createdAt).toLocaleDateString()}
           </div>
         </div>
 
@@ -325,16 +336,16 @@ function Submission({
 
       {!open && (
         <div className="sub-peek">
-          {cards.slice(0, 3).map((c) => (
-            <span className="peek-card" key={c.id}>
-              <CardThumb src={c.image} alt={c.name} width={22} />
+          {peek.slice(0, 3).map((c, i) => (
+            <span className="peek-card" key={c.id || c.cert || i}>
+              {c.image && <CardThumb src={c.image} alt={c.name} width={22} />}
               <span className="peek-name">{c.name}</span>
             </span>
           ))}
-          {cards.length > 3 && (
-            <span className="small muted">+{cards.length - 3} more</span>
+          {peek.length > 3 && (
+            <span className="small muted">+{peek.length - 3} more</span>
           )}
-          {cards.length === 0 && <span className="small muted">No cards yet</span>}
+          {peek.length === 0 && <span className="small muted">No cards yet</span>}
           <div className="spacer" />
           {sub.tracking && <span className="peek-num">#{sub.tracking}</span>}
         </div>
