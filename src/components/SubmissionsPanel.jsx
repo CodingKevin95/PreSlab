@@ -240,6 +240,9 @@ function Submission({
   // collapsed preview has to describe whichever this is -- reading only the
   // cards made every imported order claim to be empty.
   const peek = sub.results || cards
+  // Only an imported order has a measured rate. A draft's gem rate is a guess,
+  // and showing the two the same way would blur which is which.
+  const peekRate = sub.results ? summariseOrder(sub.results).hitRate : null
 
   const units = submissionUnits(sub.id, allCards)
   const analyses = cards.map((c) => ({ card: c, a: analyzeCard(c, tiers, settings, units) }))
@@ -347,6 +350,13 @@ function Submission({
           )}
           {peek.length === 0 && <span className="small muted">No cards yet</span>}
           <div className="spacer" />
+          {/* The result of the order, on the line you see before opening it --
+              it is the reason to open one, so hiding it inside was backwards. */}
+          {peekRate != null && (
+            <span className={'verdict ' + (peekRate >= 0.5 ? 'strong' : peekRate > 0 ? 'marginal' : 'negative')}>
+              {Math.round(peekRate * 100)}% hit target
+            </span>
+          )}
           {sub.tracking && <span className="peek-num">#{sub.tracking}</span>}
         </div>
       )}
@@ -780,7 +790,7 @@ function OrderResults({ results, onSetTarget, onUseRate }) {
         <div className="stats">
           <Mini k="Cards" v={String(s.total)} />
           <Mini
-            k={s.mixedTargets ? 'Hit their target' : `Hit PSA ${s.target}`}
+            k="Target grade hit rate"
             v={s.hitRate != null ? `${Math.round(s.hitRate * 100)}%` : '—'}
             n={`${s.hits} of ${s.graded} at or above${s.mixedTargets ? ' its own target' : ''}`}
             tone={s.hits > 0 ? 'good' : null}
@@ -798,12 +808,9 @@ function OrderResults({ results, onSetTarget, onUseRate }) {
         </div>
       </div>
 
+      {/* No heading: the tiles above already say how many cards came back, and
+          a table of certs needs no label to be recognised. */}
       <div className="sec">
-        <div className="sec-head">
-          <span className="micro">Graded cards</span>
-          <div className="spacer" />
-          <span className="small muted">{s.total} cert{s.total === 1 ? '' : 's'}</span>
-        </div>
         <div className="tbl-wrap">
           <table>
             <thead>
