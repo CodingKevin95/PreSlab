@@ -255,13 +255,13 @@ export default function BacklogTable({
               <th className="num grp" title="Value of one copy at the target grade">Graded value</th>
               <th
                 className="num"
-                title="Net gain on one copy versus selling it raw, with ROI beneath. Totals are in the summary above."
+                title="Gain on one copy over what you paid for it, before selling fees. ROI beneath."
               >
                 Net ea.
               </th>
               <th
                 className="num"
-                title={`The same net gain on one copy once ${feePct}% selling fees come out, with ROI beneath`}
+                title={`Profit on one copy after ${feePct}% selling fees, grading and what you paid. ROI beneath.`}
               >
                 After fees
               </th>
@@ -475,31 +475,40 @@ function Row({
             </span>
           )}
         </td>
+        {/*
+          Both columns measure against what the copy cost you, which is the
+          Paid ea. column two along -- so a row can be read across without the
+          baseline changing halfway.
+
+          Copies with no price entered fall back to market value, so an
+          uncosted row reads exactly as it did before any of this was set.
+        */}
         {/* Held back against the column beside it. This is the gain before
             fees, which is never what you actually receive, so it should not
             compete with the figure that is. */}
         <td
-          className={'num verdict second ' + a.verdict}
+          className={'num verdict second ' + verdictOf(a.upliftVsPaid)}
           title={
-            a.roi != null
-              ? `${money(a.uplift)} back on ${money(a.raw + a.gradingCost)} tied up per copy`
+            a.roiVsPaid != null
+              ? `${money(a.upliftVsPaid)} back on ${money(a.paidEach + a.gradingCost)} ` +
+                `tied up per copy — ${money(a.paidEach)} paid plus ${money(a.gradingCost)} grading.`
               : undefined
           }
         >
-          {a.uplift != null ? money(a.uplift) : '—'}
-          {a.roi != null && <div className="cardmeta">{percent(a.roi)}</div>}
+          {a.upliftVsPaid != null ? money(a.upliftVsPaid) : '—'}
+          {a.roiVsPaid != null && <div className="cardmeta">{percent(a.roiVsPaid)}</div>}
         </td>
         <td
-          className={'num verdict ' + verdictOf(a.upliftNet)}
+          className={'num verdict ' + verdictOf(a.upliftNetVsPaid)}
           title={
             a.proceeds != null
               ? `${money(a.gradedPrice)} less ${Math.round(a.feeRate * 100)}% fees leaves ` +
-                `${money(a.proceeds)}, then grading and raw value come out — per copy.`
+                `${money(a.proceeds)}, then grading and what you paid come out — per copy.`
               : undefined
           }
         >
-          {a.upliftNet != null ? money(a.upliftNet) : <span className="muted">—</span>}
-          {a.roiNet != null && <div className="cardmeta">{percent(a.roiNet)}</div>}
+          {a.upliftNetVsPaid != null ? money(a.upliftNetVsPaid) : <span className="muted">—</span>}
+          {a.roiNetVsPaid != null && <div className="cardmeta">{percent(a.roiNetVsPaid)}</div>}
         </td>
         <td>
           <button

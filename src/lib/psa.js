@@ -430,6 +430,8 @@ export function analyzeCard(card, tiers, settings, submissionSize) {
   let roiNet = null
   let upliftVsPaid = null
   let roiVsPaid = null
+  let upliftNetVsPaid = null
+  let roiNetVsPaid = null
 
   // One price per copy, so buying the same card repeatedly at different prices
   // is representable exactly rather than as an average.
@@ -469,6 +471,11 @@ export function analyzeCard(card, tiers, settings, submissionSize) {
     const spentOutlay = paidEach + gradingCost
     upliftVsPaid = gradedPrice - gradingCost - paidEach
     roiVsPaid = spentOutlay > 0 ? upliftVsPaid / spentOutlay : null
+
+    // The same measured after the marketplace takes its cut, which is the only
+    // one of the four that is money you would actually receive.
+    upliftNetVsPaid = proceeds - gradingCost - paidEach
+    roiNetVsPaid = spentOutlay > 0 ? upliftNetVsPaid / spentOutlay : null
   }
   // What the graded card must fetch just to cover the raw value + cost.
   breakEven = raw + gradingCost
@@ -494,6 +501,8 @@ export function analyzeCard(card, tiers, settings, submissionSize) {
     roiNet,
     upliftVsPaid,
     roiVsPaid,
+    upliftNetVsPaid,
+    roiNetVsPaid,
     breakEven,
     // With no tier the fee is unknown, so the net figure is optimistic by an
     // unknown amount -- don't render it as a confident win.
