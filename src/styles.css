@@ -137,11 +137,9 @@ select.mini { padding: 4px 26px 4px 8px; }
 
 .topbar {
   display: flex; align-items: center; gap: 14px;
-  background: var(--panel);
-  color: var(--text);
-  border-radius: var(--radius);
-  padding: var(--sp-3) var(--sp-4);
-  margin-bottom: var(--sp-4);
+  padding: var(--sp-2) 2px var(--sp-4);
+  margin-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--rule-faint);
 }
 .brand { font-size: 17px; font-weight: 650; letter-spacing: -.2px; color: var(--text); }
 .brand span { color: var(--dimmer); font-weight: 400; margin-left: 8px; font-size: 13px; }
@@ -169,12 +167,12 @@ select.mini { padding: 4px 26px 4px 8px; }
   background: var(--panel);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  padding: var(--sp-4);
-  margin-bottom: var(--sp-3);
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-4);
   box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
 }
-.panel h2 { margin: 0 0 4px; font-size: 14px; font-weight: 650; }
-.panel .sub { color: var(--dim); font-size: 12.5px; margin: 0 0 14px; }
+.panel h2 { margin: 0 0 6px; font-size: 19px; font-weight: 660; letter-spacing: -.015em; }
+.panel .sub { color: var(--dim); font-size: 13px; margin: 0 0 18px; max-width: 62ch; }
 
 .row { display: flex; gap: var(--sp-2); align-items: center; }
 .row.wrap { flex-wrap: wrap; }
@@ -182,20 +180,20 @@ select.mini { padding: 4px 26px 4px 8px; }
 
 /* ---------- stats ---------- */
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--sp-2); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: var(--sp-3); }
 .stat {
   background: var(--panel); border: 1px solid var(--line-soft);
-  border-radius: var(--radius); padding: var(--sp-3) var(--sp-3);
+  border-radius: var(--radius); padding: var(--sp-4);
   box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
 }
-.stat .v { font-size: 21px; font-weight: 650; margin-top: 5px; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
+.stat .v { font-size: 24px; font-weight: 650; margin-top: 5px; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
 .stat .n { color: var(--dimmer); font-size: 11.5px; margin-top: 3px; }
 .stat .v.good { color: var(--good); }
 
 /* The outcome tile. Carries weight rather than colour, so it still leads for
    anyone who cannot tell the green from the red. */
 .stat-lead { border-color: var(--line); background: var(--panel-2); }
-.stat-lead .v { font-size: 26px; }
+.stat-lead .v { font-size: 31px; }
 .stat .v.bad { color: var(--bad); }
 
 /* Scenario tiles double as buttons that reveal their per-card breakdown. */
@@ -516,3 +514,124 @@ td.num .cardmeta { white-space: nowrap; }
   box-shadow: 0 18px 50px rgba(0, 0, 0, .5);
 }
 .modal h2 { font-weight: 650; }
+
+/* ---------- landing ---------- */
+
+/*
+   A different set of rules from the app on purpose. In here type carries the
+   hierarchy and space does the grouping, so there are almost no borders and
+   nothing is dense. That would be the wrong instinct inside the tool, where
+   the job is to fit hundreds of rows on one screen.
+*/
+.land { max-width: 100%; }
+
+.land-nav {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px clamp(20px, 5vw, 56px);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+}
+.land-mark { font-weight: 650; letter-spacing: -.2px; }
+.land-cta-sm {
+  color: var(--text); text-decoration: none; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px;
+}
+.land-cta-sm:hover { background: var(--panel-2); }
+
+/* Each section owns a screen. One point lands before the next arrives. */
+.land-hero,
+.land-panel {
+  min-height: 82vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 12vh clamp(20px, 6vw, 80px);
+  max-width: 880px; margin: 0 auto;
+}
+.land-hero { text-align: center; align-items: center; min-height: 88vh; }
+
+.land-hero h1 {
+  margin: 0;
+  font-size: clamp(40px, 8vw, 88px);
+  line-height: 1.02;
+  letter-spacing: -.035em;
+  font-weight: 680;
+}
+.land-panel h2,
+.land-close {
+  margin: 0 0 20px;
+  font-size: clamp(28px, 4.6vw, 46px);
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  font-weight: 660;
+}
+.land-close { margin-bottom: 32px; }
+
+.land-lede {
+  margin: 24px 0 40px;
+  font-size: clamp(17px, 2.2vw, 22px);
+  line-height: 1.45;
+  color: var(--dim);
+  max-width: 30ch;
+}
+.land-body {
+  margin: 0;
+  font-size: clamp(15px, 1.8vw, 19px);
+  line-height: 1.6;
+  color: var(--dim);
+  max-width: 54ch;
+}
+.land-eyebrow {
+  margin: 0 0 14px;
+  font-size: 12px; text-transform: uppercase; letter-spacing: .12em;
+  font-weight: 700; color: var(--dimmer);
+}
+
+.land-cta {
+  display: inline-block;
+  background: var(--accent); color: var(--bg);
+  text-decoration: none; font-weight: 650; font-size: 16px;
+  padding: 14px 34px; border-radius: 999px;
+  transition: transform .12s, background .12s;
+}
+.land-cta:hover { background: #fff; transform: translateY(-1px); }
+.land-fine { margin: 18px 0 0; font-size: 13px; color: var(--dimmer); }
+
+/* The one place a box earns its keep: these are figures, and figures read
+   better ruled than floating. */
+.land-calc {
+  margin-top: 44px;
+  display: grid; gap: 2px;
+  width: 100%; max-width: 460px;
+  font-size: clamp(14px, 1.7vw, 16px);
+  font-variant-numeric: tabular-nums;
+}
+.land-calc div {
+  display: flex; justify-content: space-between; gap: 24px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--rule-faint);
+  color: var(--dim);
+}
+.land-calc div span:last-child { color: var(--text); }
+.land-calc-tot {
+  border-bottom: none !important;
+  margin-top: 6px; padding-top: 16px !important;
+  border-top: 1px solid var(--line) !important;
+  font-weight: 650; font-size: 1.1em;
+}
+.land-calc .pos { color: var(--good); }
+
+.land-end { min-height: 70vh; }
+
+.land-foot {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  align-items: center; justify-content: space-between;
+  padding: 40px clamp(20px, 5vw, 56px);
+  border-top: 1px solid var(--rule-faint);
+  font-size: 13px; color: var(--dimmer);
+}
+
+/* Sections sized to the viewport turn into a lot of empty scrolling on a
+   phone, where the text already fills the screen. */
+@media (max-width: 640px) {
+  .land-hero, .land-panel { min-height: 0; padding: 64px 20px; }
+}
