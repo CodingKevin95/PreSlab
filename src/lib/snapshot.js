@@ -27,7 +27,25 @@ export function loadSnapshot() {
   if (loading) return loading
 
   loading = fetch('/data/snapshot.json')
-    .then((res) => (res.ok ? res.json() : null))
+    .then((res) => {
+      if (!res.ok) return null
+      /*
+        A misrouted request returns the page shell with a 200, which would
+        throw in the JSON parse below and be swallowed as "no snapshot". The
+        app would work, just slowly and expensively, with nothing to say why.
+        Checking the type turns that into something visible.
+      */
+      const type = res.headers.get('content-type') || ''
+      if (!type.includes('json')) {
+        console.warn(
+          'Snapshot request returned ' + (type || 'no content type') +
+          ' rather than JSON. It is probably being caught by a rewrite, so ' +
+          'every lookup will go to the API instead.'
+        )
+        return null
+      }
+      return res.json()
+    })
     .then((doc) => {
       if (!doc?.cards?.length) return null
 
