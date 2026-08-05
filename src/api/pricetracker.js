@@ -187,11 +187,28 @@ async function request(path, { retried = false } = {}) {
   const userKey = getUserKey()
   const headers = userKey ? { 'x-user-api-key': userKey } : undefined
 
+  /*
+    A request that never answers has to end by itself.
+
+    Without this the caller's spinner runs forever: nothing rejects, so the
+    catch never fires and the button stays disabled with no explanation. That
+    reads as the app being broken rather than one request having failed, and it
+    is unrecoverable without a reload.
+  */
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(), 25_000)
+
   let res
   try {
-    res = await fetch(BASE + path, { headers })
-  } catch {
-    throw new ApiError('Could not reach the API. Is the dev server running?')
+    res = await fetch(BASE + path, { headers, signal: abort.signal })
+  } catch (err) {
+    throw new ApiError(
+      err?.name === 'AbortError'
+        ? 'The API did not respond within 25 seconds. It may be busy, or the dev server may not be running.'
+        : 'Could not reach the API. Is the dev server running?'
+    )
+  } finally {
+    clearTimeout(timer)
   }
 
   let json = null

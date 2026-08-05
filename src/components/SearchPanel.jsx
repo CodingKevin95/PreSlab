@@ -29,6 +29,9 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
   const [fromCache, setFromCache] = useState(false)
   // Results found in the shipped snapshot, which cost nothing.
   const [local, setLocal] = useState(null)
+  // Shown beside the search rather than only in the page banner, which is
+  // easy to miss when the failure was caused by the button you just pressed.
+  const [failed, setFailed] = useState(null)
 
   const [hasSnapshot, setHasSnapshot] = useState(false)
   useEffect(() => { loadSnapshot().then((i) => setHasSnapshot(!!i)) }, [])
@@ -62,6 +65,7 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
     if (!term) return
     setBusy(true)
     onError(null)
+    setFailed(null)
     try {
       const r = await searchCards({ q: term, limit, language })
       setResults(r.data)
@@ -71,6 +75,7 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
       if (r.usage) onUsage(r.usage)
     } catch (err) {
       onError(err.message)
+      setFailed(err.message)
       setResults(null)
     } finally {
       setBusy(false)
@@ -132,9 +137,16 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
         )}
       </form>
 
-      <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
-        Multi-word search works well. Include the set name to narrow it down.
-      </p>
+      {failed ? (
+        <p className="small" style={{ marginTop: 8, marginBottom: 0, color: 'var(--bad)' }}>
+          {failed}{' '}
+          <button className="ghost small" onClick={run} disabled={busy}>Try again</button>
+        </p>
+      ) : (
+        <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
+          Multi-word search works well. Include the set name to narrow it down.
+        </p>
+      )}
 
       {/* Results from the shipped snapshot. Free, so they are shown first and
           the API is offered only if these are not what you wanted. */}
