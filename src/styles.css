@@ -293,8 +293,23 @@ td.num .cardmeta { white-space: nowrap; }
 }
 /* A card is only ever in the backlog or in a submission -- the status is
    derived from that, never set by hand. */
-.pill.backlog { color: var(--dim); }
-.pill.submitted { color: var(--ink-900); border-color: var(--ink-500); background: var(--panel-2); }
+/*
+   Backlog is the resting state and stays quiet. Submitted means the card has
+   left your hands, so it is the one worth seeing at a glance -- it reads as
+   filled rather than outlined, which also distinguishes the two without
+   relying on their text being read.
+
+   It previously used a token that inverted with the theme: --ink-900 was the
+   text colour on a light background and became a near-black surface colour on
+   a dark one, leaving the pill at 1.44:1.
+*/
+.pill.backlog { color: var(--dim); background: transparent; }
+.pill.submitted {
+  color: var(--bg);
+  background: var(--dim);
+  border-color: var(--dim);
+  font-weight: 650;
+}
 
 .verdict { font-weight: 600; font-variant-numeric: tabular-nums; }
 .verdict.strong { color: var(--good); }
