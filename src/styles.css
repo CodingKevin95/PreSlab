@@ -20,8 +20,8 @@
      something you type into. */
   --field: #141516;
 
-  --line: var(--ink-200);
-  --line-soft: #303235;
+  --line: #71767c;
+  --line-soft: #61666b;
   --text: #eaeaea;
 
   /* Secondary and tertiary, both checked against the page as well as the
@@ -51,10 +51,18 @@
   --sp-4: 16px;
   --sp-5: 24px;
 
-  /* Divider weights, weakest to strongest. Row rules sit at the bottom so a
-     long table reads as rows of data rather than a grid of boxes. */
-  --rule-faint: #26282a;
-  --rule: #34363a;
+  /*
+    Divider weights, weakest to strongest.
+
+    The structural ones -- panel edges, section rules, tile outlines -- are at
+    or near the 3:1 WCAG asks of a UI boundary, because they are what says
+    where one thing ends and the next begins.
+
+    Row rules deliberately are not. They repeat hundreds of times, and at that
+    strength a table stops reading as rows of data and becomes a grid of boxes.
+  */
+  --rule-faint: #43474b;
+  --rule: #71767c;
 
   color-scheme: dark;
 }
@@ -651,7 +659,7 @@ td.num .cardmeta { white-space: nowrap; }
   display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
   padding-bottom: var(--sp-2);
   margin-bottom: var(--sp-3);
-  border-bottom: 1px solid var(--rule-faint);
+  border-bottom: 1px solid var(--rule);
 }
 /* The heading holds its ground when a control sits beside it. */
 .sec-head .micro { flex: none; }
