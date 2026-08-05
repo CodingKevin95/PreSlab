@@ -744,8 +744,25 @@ export default function App() {
         })
       )
       if (u) handleUsage(u)
+
+      /*
+        Rows updated, not cards fetched.
+
+        These differ whenever you hold the same card in two printings: identity
+        is the TCGplayer id plus the printing, so that is two rows, but one
+        lookup covers both and the price applies to each. Comparing the fetched
+        count against the row count read as a failure -- "102 of 103" -- when
+        every row had in fact been updated.
+      */
+      const updatedRows = active.filter((c) => fresh.has(c.tcgPlayerId)).length
+      const spare = items.length - fresh.size
+
       setNotice(
-        `Updated ${fresh.size} of ${items.length} card${items.length === 1 ? '' : 's'} using ${calls} credit${calls === 1 ? '' : 's'}.` +
+        `Updated ${updatedRows} card${updatedRows === 1 ? '' : 's'} ` +
+        `using ${calls} credit${calls === 1 ? '' : 's'}.` +
+        (spare > 0 && !failed?.length
+          ? ` ${spare} of them share a card with another row, so they cost one lookup between them.`
+          : '') +
         (failed?.length ? ` The API returned nothing for: ${failed.join(', ')}.` : '')
       )
     } catch (err) {
