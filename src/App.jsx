@@ -434,13 +434,18 @@ export default function App() {
       createdAt: Date.now(),
       status: 'draft',
       tracking: '',
+      // Pre-filled from whatever a finished order actually returned, so the
+      // scenarios start from a measured rate instead of a blank box. Still
+      // editable per batch -- a submission of vintage is not the same bet as
+      // one of modern.
+      gemRate: settings.defaultGemRate ?? '',
     }
     setSubmissions((prev) => [sub, ...prev])
     // Skipped when empty: it would walk every card to move none of them, and
     // rewrite the whole list to the same value.
     if (picks.length) assignToSubmission(sub.id, picks)
     return sub
-  }, [submissions, setSubmissions, assignToSubmission])
+  }, [submissions, setSubmissions, assignToSubmission, settings.defaultGemRate])
 
   /**
    * Returns cards to the backlog, merging them back into an existing
@@ -1042,6 +1047,10 @@ export default function App() {
           onRemoveCards={removeFromSubmission}
           onGoToBacklog={() => setTab('backlog')}
           onAddCard={addCard}
+          onUseRate={(pct) => {
+            setSettings({ ...settings, defaultGemRate: String(pct) })
+            setNotice(`New submissions will start at ${pct}%.`)
+          }}
           onNewSubmission={() => {
             const sub = createSubmission()
             setNotice(`Created ${sub.name}. Search below to add cards to it.`)
@@ -1059,6 +1068,10 @@ export default function App() {
       {tab === 'completed' && (
         <SubmissionsPanel
           completed
+          onUseRate={(pct) => {
+            setSettings({ ...settings, defaultGemRate: String(pct) })
+            setNotice(`New submissions will start at ${pct}%.`)
+          }}
           onImportOrder={(results, filename) => {
             /*
               Recorded on the submission rather than added to the backlog.

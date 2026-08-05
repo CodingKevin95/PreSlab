@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   analyzeCard, money, percent, qtyOf, submissionUnits, gradeScenarios,
   priceAsOf, agoLabel, SUBMISSION_STATUSES, tierForDeclaredValue, statusIdOf,
+  GRADE_OPTIONS,
 } from '../lib/psa'
 import CardThumb from './CardThumb'
 import SearchPanel from './SearchPanel'
@@ -11,7 +12,7 @@ export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
   onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError,
-  completed, onImportOrder, focusId, onFocused,
+  completed, onImportOrder, onUseRate, focusId, onFocused,
 }) {
   const [q, setQ] = useState('')
 
@@ -148,6 +149,7 @@ export default function SubmissionsPanel({
           onDelete={() => onDeleteSubmission(s.id)}
           onRemoveCards={onRemoveCards}
           onAddCard={onAddCard}
+          onUseRate={onUseRate}
           qtyOf={qtyOf}
           adding={adding}
           onUsage={onUsage}
@@ -214,7 +216,7 @@ function verdictOf(n) {
 
 function Submission({
   sub, cards, allCards, tiers, settings, onPatch, onDelete, onRemoveCards,
-  onAddCard, qtyOf, adding, onUsage, onError,
+  onAddCard, qtyOf, adding, onUsage, onError, onUseRate,
   focused, onFocused,
 }) {
   const [open, setOpen] = useState(true)
@@ -338,7 +340,14 @@ function Submission({
         </div>
       )}
 
-      {open && sub.results && <OrderResults results={sub.results} />}
+      {open && sub.results && (
+        <OrderResults
+          results={sub.results}
+          target={sub.targetGrade ?? 10}
+          onTarget={(g) => onPatch({ targetGrade: g })}
+          onUseRate={onUseRate}
+        />
+      )}
 
       {open && !sub.results && (
       <>
@@ -671,7 +680,7 @@ function Submission({
   )
 }
 
-function Mini({ k, v, n, tone, open, onClick }) {
+function Mini({ k, v, n, tone, open, onClick, lead }) {
   return (
     <div
       className={'stat' + (onClick ? ' stat-btn' : '') + (open ? ' stat-open' : '')}
@@ -734,21 +743,54 @@ function ImportOrder({ onImport, primary }) {
  * scenario planner asks you to guess before sending anything -- so a finished
  * order is where you find out how good that guess was.
  */
-function OrderResults({ results }) {
-  const s = summariseOrder(results)
+function OrderResults({ results, target, onTarget, onUseRate }) {
+  const s = summariseOrder(results, target)
   return (
     <>
       <div className="sec">
-        <div className="sec-head"><span className="micro">What came back</span></div>
+        <div className="sec-head">
+          <span className="micro">What came back</span>
+          <span className="small muted">against a target of</span>
+          <select
+            className="mini"
+            style={{ width: 96 }}
+            value={target}
+            onChange={(e) => onTarget(Number(e.target.value))}
+            title="The grade you were aiming for. A card at or above it counts as a hit."
+          >
+            {GRADE_OPTIONS.map((g) => (
+              <option key={g} value={g}>PSA {g}</option>
+            ))}
+          </select>
+          <div className="spacer" />
+          {/* The measured rate is only useful if it can replace the guess, so
+              it is offered rather than left to be copied by hand. */}
+          {s.hitRate != null && onUseRate && (
+            <button
+              className="ghost small"
+              onClick={() => onUseRate(Math.round(s.hitRate * 100))}
+              title="Pre-fill this rate on new submissions instead of guessing"
+            >
+              Use {Math.round(s.hitRate * 100)}% for new submissions
+            </button>
+          )}
+        </div>
         <div className="stats">
           <Mini k="Cards" v={String(s.total)} />
           <Mini
-            k="PSA 10s"
-            v={String(s.gems)}
-            n={s.gemRate != null ? `${Math.round(s.gemRate * 100)}% of graded cards` : undefined}
-            tone={s.gems > 0 ? 'good' : null}
+            k={`Hit PSA ${s.target}`}
+            v={s.hitRate != null ? `${Math.round(s.hitRate * 100)}%` : '—'}
+            n={`${s.hits} of ${s.graded} at or above`}
+            tone={s.hits > 0 ? 'good' : null}
+            lead
           />
-          {s.distribution.slice(0, 4).map(([g, n]) => (
+          <Mini
+            k="Missed"
+            v={String(s.misses)}
+            n={s.misses > 0 ? 'came back lower' : 'none'}
+            tone={s.misses > 0 ? 'bad' : null}
+          />
+          {s.distribution.slice(0, 3).map(([g, n]) => (
             <Mini key={g} k={`PSA ${g}`} v={String(n)} />
           ))}
         </div>

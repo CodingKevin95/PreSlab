@@ -158,23 +158,34 @@ export function parsePsaOrderCsv(text) {
 }
 
 /**
- * What the order actually returned.
+ * What the order actually returned, measured against the grade you were after.
  *
- * The gem rate here is the real one, measured rather than guessed, which is the
- * number the scenario planner asks you to estimate before sending anything.
+ * A hit is at or above the target, not exactly on it. Targeting a 9 and getting
+ * a 10 is not a miss, and counting it as one would understate how well a
+ * submission went and push your planning rate down for no reason.
+ *
+ * The resulting rate is the same quantity the scenario planner asks you to
+ * estimate before sending anything -- so this is the measured version of a
+ * number that is otherwise a guess.
  */
-export function summariseOrder(cards) {
+export function summariseOrder(cards, targetGrade = 10) {
+  const target = Number(targetGrade) || 10
   const graded = cards.filter((c) => c.grade != null)
-  const gems = graded.filter((c) => c.grade === 10).length
+  const hits = graded.filter((c) => c.grade >= target)
   const byGrade = new Map()
   for (const c of graded) byGrade.set(c.grade, (byGrade.get(c.grade) || 0) + 1)
 
   return {
+    target,
     total: cards.length,
     graded: graded.length,
     ungraded: cards.length - graded.length,
-    gems,
-    gemRate: graded.length ? gems / graded.length : null,
+    hits: hits.length,
+    misses: graded.length - hits.length,
+    hitRate: graded.length ? hits.length / graded.length : null,
+    // Kept separate from the hit rate: PSA 10s are what most pricing is built
+    // on, so it stays worth seeing even when you were aiming lower.
+    gems: graded.filter((c) => c.grade === 10).length,
     distribution: [...byGrade.entries()].sort((a, b) => b[0] - a[0]),
   }
 }
