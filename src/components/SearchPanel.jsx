@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { searchCards } from '../api/pricetracker'
+import { loadSnapshot, localSearch, snapshotNow } from '../lib/snapshot'
 import { money } from '../lib/psa'
 import CardThumb from './CardThumb'
 
@@ -26,6 +27,34 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
   const [total, setTotal] = useState(0)
   const [busy, setBusy] = useState(false)
   const [fromCache, setFromCache] = useState(false)
+  // Results found in the shipped snapshot, which cost nothing.
+  const [local, setLocal] = useState(null)
+
+  const [hasSnapshot, setHasSnapshot] = useState(false)
+  useEffect(() => { loadSnapshot().then((i) => setHasSnapshot(!!i)) }, [])
+
+  /*
+    Looks in the shipped snapshot first and shows what it finds for free.
+
+    The API search is left as a separate, deliberate press rather than a
+    fallback that fires on its own. It costs a credit per result, and spending
+    silently because a local search came up short is exactly the behaviour
+    people resent.
+  */
+  function runLocal(e) {
+    e?.preventDefault()
+    const term = q.trim()
+    if (!term) return
+
+    // With no snapshot shipped there is nothing to look through, so the one
+    // obvious button does the thing that works rather than reporting an empty
+    // result from a store that does not exist.
+    if (!snapshotNow()) return run(e)
+
+    onError(null)
+    setResults(null)
+    setLocal(localSearch(term, limit))
+  }
 
   async function run(e) {
     e?.preventDefault()
@@ -36,6 +65,7 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
     try {
       const r = await searchCards({ q: term, limit, language })
       setResults(r.data)
+      setLocal(null)
       setTotal(r.total ?? r.data.length)
       setFromCache(r.cached)
       if (r.usage) onUsage(r.usage)
@@ -58,7 +88,7 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
         </div>
       )}
 
-      <form className="row wrap" onSubmit={run}>
+      <form className="row wrap" onSubmit={runLocal}>
         <div className="grow">
           <input
             value={q}
@@ -88,13 +118,55 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
           ))}
         </select>
         <button className="primary" disabled={busy || !q.trim()}>
-          {busy ? 'Searching…' : `Search (${limit} credits)`}
+          {hasSnapshot ? 'Search' : busy ? 'Searching…' : `Search (${limit} credits)`}
         </button>
+        {hasSnapshot && (
+          <button
+            type="button"
+            onClick={run}
+            disabled={busy || !q.trim()}
+            title="Searches every card the API knows about, not just the ones shipped with the app"
+          >
+            {busy ? 'Searching…' : `Search everything (${limit} credits)`}
+          </button>
+        )}
       </form>
 
       <p className="small muted" style={{ marginTop: 8, marginBottom: 0 }}>
         Multi-word search works well. Include the set name to narrow it down.
       </p>
+
+      {/* Results from the shipped snapshot. Free, so they are shown first and
+          the API is offered only if these are not what you wanted. */}
+      {local && (
+        <div style={{ marginTop: 16 }}>
+          <div className="small muted" style={{ marginBottom: 10 }}>
+            {local.length === 0
+              ? 'Nothing in the sets shipped with the app.'
+              : `${local.length} from the sets shipped with the app, no credits used`}
+            {snapshotNow()?.sets?.length
+              ? ` · ${snapshotNow().sets.length} sets stored`
+              : ''}
+          </div>
+          {local.length > 0 && (
+            <div className="search-results">
+              {local.map((c) => (
+                <Result
+                  key={c.tcgPlayerId}
+                  card={c}
+                  onAdd={onAdd}
+                  qtyOf={qtyOf}
+                  adding={adding}
+                />
+              ))}
+            </div>
+          )}
+          <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
+            Not here? <b>Search everything</b> looks through every card the API
+            knows, at one credit per result.
+          </p>
+        </div>
+      )}
 
       {results && (
         <div style={{ marginTop: 16 }}>

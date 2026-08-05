@@ -178,13 +178,40 @@ if (DRY) {
 const cards = []
 for (const s of chosen) cards.push(...await fetchSet(s))
 
+/*
+  Merged into whatever is already there rather than replacing it.
+
+  A full snapshot costs more than one day's allowance, so it has to be built
+  across several runs. Overwriting would mean each day threw away the last, and
+  a run that stopped early would lose everything it had already paid for.
+
+  Cards are keyed by id, so re-running a set refreshes it in place.
+*/
 mkdirSync(dirname(OUT), { recursive: true })
+
+const prev = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : { sets: [], cards: [] }
+const byId = new Map((prev.cards || []).map((c) => [c.id, c]))
+for (const c of cards) byId.set(c.id, c)
+
+const setById = new Map((prev.sets || []).map((s) => [s.id, s]))
+for (const s of chosen) {
+  setById.set(s.tcgPlayerNumericId, {
+    id: s.tcgPlayerNumericId, name: s.name, series: s.series,
+  })
+}
+
 const doc = {
   builtAt: new Date().toISOString(),
-  sets: chosen.map((s) => ({ id: s.tcgPlayerNumericId, name: s.name, series: s.series })),
-  cards,
+  sets: [...setById.values()].sort((a, b) => a.name.localeCompare(b.name)),
+  cards: [...byId.values()],
 }
 writeFileSync(OUT, JSON.stringify(doc))
+
+const added = doc.cards.length - (prev.cards || []).length
+if (prev.cards?.length) {
+  console.log(`
+Merged with the existing snapshot: ${added} new, ${cards.length - added} refreshed`)
+}
 
 const kb = (Buffer.byteLength(JSON.stringify(doc)) / 1024).toFixed(0)
 console.log(`\nWrote ${cards.length} cards to public/data/snapshot.json (${kb} KB)`)

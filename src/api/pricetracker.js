@@ -1,4 +1,5 @@
 import { load, save } from '../lib/storage'
+import { loadSnapshot, localCard } from '../lib/snapshot'
 
 // Requests go through the Vite dev proxy, which attaches the bearer token
 // server-side. The key is never present in the browser bundle.
@@ -591,6 +592,22 @@ export async function scanMarket({
 export async function getCard(tcgPlayerId, {
   withGraded = false, force = false, fallbackQuery = null, language = 'english',
 } = {}) {
+  /*
+    The shipped snapshot first, and only for English: it is built from the
+    English collection, and a Japanese card sharing an id would be the wrong
+    card entirely.
+
+    Skipped when forcing, because a deliberate refresh is asking for today's
+    price and the snapshot is as old as the last time it was built.
+  */
+  if (!force && language === 'english') {
+    await loadSnapshot()
+    const hit = localCard(tcgPlayerId)
+    if (hit && (!withGraded || hit.graded)) {
+      return { card: hit, cached: true, usage: null, fromSnapshot: true }
+    }
+  }
+
   const key = `card:${language}:${tcgPlayerId}:${withGraded ? 'g' : 'r'}`
   if (!force) {
     const cached = cacheGet(key, withGraded ? TTL.graded : TTL.card)
