@@ -122,19 +122,12 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
             <option key={n} value={n}>{n} results</option>
           ))}
         </select>
+        {/* One button. The wider API search is offered under the results
+            instead, where you already know the stored sets came up short, so
+            the thing that costs credits is never the first thing on screen. */}
         <button className="primary" disabled={busy || !q.trim()}>
-          {hasSnapshot ? 'Search' : busy ? 'Searching…' : `Search (${limit} credits)`}
+          {busy ? 'Searching…' : hasSnapshot ? 'Search' : `Search (${limit} credits)`}
         </button>
-        {hasSnapshot && (
-          <button
-            type="button"
-            onClick={run}
-            disabled={busy || !q.trim()}
-            title="Searches every card the API knows about, not just the ones shipped with the app"
-          >
-            {busy ? 'Searching…' : `Search everything (${limit} credits)`}
-          </button>
-        )}
       </form>
 
       {failed ? (
@@ -174,8 +167,11 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
             </div>
           )}
           <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
-            Not here? <b>Search everything</b> looks through every card the API
-            knows, at one credit per result.
+            Not here?{' '}
+            <button className="ghost small" onClick={run} disabled={busy}>
+              {busy ? 'Searching…' : `Search every card (${limit} credits)`}
+            </button>{' '}
+            looks beyond the stored sets, at one credit per result.
           </p>
         </div>
       )}
