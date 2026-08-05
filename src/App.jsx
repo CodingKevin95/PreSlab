@@ -415,19 +415,33 @@ export default function App() {
     setSelected(new Set())
   }, [setCards])
 
-  const createSubmission = useCallback((picks) => {
+  /**
+   * @param picks Cards to move in. Empty creates an empty batch, which is the
+   *   sensible start now that cards can be searched for from inside one.
+   *
+   * Named off the highest number already in use rather than the count, so
+   * deleting the second of three does not make the next one a second
+   * "Submission 3".
+   */
+  const createSubmission = useCallback((picks = []) => {
+    const used = submissions
+      .map((s) => /^Submission (\d+)$/.exec(s.name || '')?.[1])
+      .filter(Boolean)
+      .map(Number)
     const sub = {
       id: uid(),
-      name: `Submission ${submissions.length + 1}`,
+      name: `Submission ${(used.length ? Math.max(...used) : 0) + 1}`,
       createdAt: Date.now(),
       status: 'draft',
       tracking: '',
       notes: '',
     }
     setSubmissions((prev) => [sub, ...prev])
-    assignToSubmission(sub.id, picks)
+    // Skipped when empty: it would walk every card to move none of them, and
+    // rewrite the whole list to the same value.
+    if (picks.length) assignToSubmission(sub.id, picks)
     return sub
-  }, [submissions.length, setSubmissions, assignToSubmission])
+  }, [submissions, setSubmissions, assignToSubmission])
 
   /**
    * Returns cards to the backlog, merging them back into an existing
@@ -1017,6 +1031,11 @@ export default function App() {
           onRemoveCards={removeFromSubmission}
           onGoToBacklog={() => setTab('backlog')}
           onAddCard={addCard}
+          onNewSubmission={() => {
+            const sub = createSubmission()
+            setNotice(`Created ${sub.name}. Search below to add cards to it.`)
+            setFocusSubmission(sub.id)
+          }}
           qtyOf={qtyOf}
           adding={adding}
           onUsage={handleUsage}

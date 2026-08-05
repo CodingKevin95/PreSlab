@@ -9,7 +9,7 @@ import SearchPanel from './SearchPanel'
 export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
-  onAddCard, qtyOf, adding, onUsage, onError,
+  onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError,
   focusId, onFocused,
 }) {
 
@@ -19,12 +19,13 @@ export default function SubmissionsPanel({
         <div className="empty">
           <p style={{ fontSize: 15, color: 'var(--dim)' }}>No submissions yet.</p>
           <p>
-            Go to <b>Backlog</b>, tick the cards you want to send, and choose
-            <b> Add to submission</b>.
+            Start one here and search for cards inside it, or go to <b>Backlog</b>,
+            tick what you want to send and choose <b>Add to submission</b>.
           </p>
-          <button className="primary" style={{ marginTop: 12 }} onClick={onGoToBacklog}>
-            Open backlog
-          </button>
+          <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
+            <button className="primary" onClick={onNewSubmission}>New submission</button>
+            <button onClick={onGoToBacklog}>Open backlog</button>
+          </div>
         </div>
       </div>
     )
@@ -49,14 +50,15 @@ export default function SubmissionsPanel({
 
   return (
     <>
-      {submissions.length > 1 && (
-        <div className="row" style={{ marginBottom: 12 }}>
-          <div className="spacer" />
+      <div className="row" style={{ marginBottom: 16 }}>
+        <button className="primary" onClick={onNewSubmission}>New submission</button>
+        <div className="spacer" />
+        {submissions.length > 1 && (
           <button onClick={exportAll} title="Every submission in one spreadsheet">
             Export all {submissions.length} as CSV
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {submissions.map((s) => (
         <Submission
