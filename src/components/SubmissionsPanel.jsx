@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   analyzeCard, money, percent, qtyOf, submissionUnits, gradeScenarios,
   priceAsOf, agoLabel, SUBMISSION_STATUSES, tierForDeclaredValue, statusIdOf,
@@ -12,6 +12,28 @@ export default function SubmissionsPanel({
   onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError,
   focusId, onFocused,
 }) {
+  const [q, setQ] = useState('')
+
+  /*
+    Matches the batch and what is in it. Looking for a submission usually
+    starts from a card -- "which batch has the Umbreon in it" -- so searching
+    only the names would miss the question people actually arrive with.
+
+    Same rule as the other filters: every word must appear somewhere, so extra
+    words narrow rather than broaden.
+  */
+  const terms = q.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  const shown = useMemo(() => {
+    if (!terms.length) return submissions
+    return submissions.filter((sub) => {
+      const mine = cards.filter((c) => c.submissionId === sub.id)
+      const hay = [
+        sub.name, sub.tracking,
+        ...mine.map((c) => `${c.name} ${c.setName || ''} ${c.number || ''}`),
+      ].filter(Boolean).join(' ').toLowerCase()
+      return terms.every((t) => hay.includes(t))
+    })
+  }, [submissions, cards, q])
 
   if (submissions.length === 0) {
     return (
@@ -52,9 +74,27 @@ export default function SubmissionsPanel({
 
   return (
     <>
-      <div className="row" style={{ marginBottom: 16 }}>
+      <div className="row wrap" style={{ marginBottom: 16 }}>
         {onNewSubmission && (
           <button className="primary" onClick={onNewSubmission}>New submission</button>
+        )}
+        {/* Only worth showing once there is something to search through. */}
+        {submissions.length > 1 && (
+          <>
+            <input
+              className="mini"
+              style={{ width: 230 }}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Find a submission or a card in one…"
+            />
+            {terms.length > 0 && (
+              <>
+                <button className="ghost small" onClick={() => setQ('')} title="Clear">Clear</button>
+                <span className="small muted">{shown.length} of {submissions.length}</span>
+              </>
+            )}
+          </>
         )}
         <div className="spacer" />
         {submissions.length > 1 && (
@@ -64,7 +104,19 @@ export default function SubmissionsPanel({
         )}
       </div>
 
-      {submissions.map((s) => (
+      {/* Distinct from having no submissions at all, which is handled above. */}
+      {terms.length > 0 && shown.length === 0 && (
+        <div className="panel">
+          <div className="empty">
+            <p>No submission matches that.</p>
+            <p className="small">
+              Searches batch names, submission numbers, and the cards inside them.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {shown.map((s) => (
         <Submission
           key={s.id}
           sub={s}
