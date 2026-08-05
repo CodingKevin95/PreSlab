@@ -1,18 +1,39 @@
 :root {
-  --bg: #0e1116;
-  --panel: #161b22;
-  --panel-2: #1c2230;
-  --line: #262d3a;
-  --line-soft: #1f2632;
-  --text: #e6edf3;
-  --dim: #8b95a5;
-  --dimmer: #5f6979;
-  --accent: #4c8dff;
-  --accent-dim: #2b4d8f;
-  --good: #3fb950;
-  --warn: #d29922;
-  --bad: #f85149;
-  --radius: 10px;
+  /* Base palette. */
+  --brand-900: #3C493F;
+  --brand-500: #7E8D85;
+  --brand-200: #B3BFB8;
+  --brand-050: #F0F7F4;
+
+  --bg: var(--brand-050);
+  --panel: #ffffff;
+  --panel-2: #e7f0eb;
+  /* Inputs are white against tinted panels, so a field reads as somewhere you
+     type rather than another block of surface. */
+  --field: #ffffff;
+
+  --line: var(--brand-200);
+  --line-soft: #dde8e2;
+  --text: var(--brand-900);
+
+  /* Secondary text is darker than the palette's mid tone. #7E8D85 on white is
+     about 3.5:1, which fails for the 11px labels this is mostly used on, so
+     the readable step sits here and the palette tone drops to tertiary. */
+  --dim: #5a6961;
+  --dimmer: #7e8d85;
+
+  --accent: var(--brand-900);
+  --accent-dim: var(--brand-500);
+
+  /* Profit and loss, deliberately more saturated than anything in the chrome.
+     The interface is now green, so a muted green would read as decoration
+     rather than "this one makes money" -- saturation is what separates a
+     figure that means something from the surface behind it. */
+  --good: #15803d;
+  --warn: #a16207;
+  --bad: #b42318;
+
+  --radius: 12px;
 
   /* One spacing scale. Padding and gaps had drifted across 5, 6, 7, 9, 10, 12,
      13, 14, 16, 18, 20 and 22px, which is what makes a dense layout feel noisy
@@ -25,10 +46,10 @@
 
   /* Divider weights, weakest to strongest. Row rules sit at the bottom so a
      long table reads as rows of data rather than a grid of boxes. */
-  --rule-faint: #1a2029;
-  --rule: #1f2632;
+  --rule-faint: #e6efe9;
+  --rule: #cfdcd5;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* Every small uppercase label in the app -- table headers, stat captions,
@@ -64,14 +85,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 button {
   cursor: pointer;
-  background: var(--panel-2);
+  background: var(--panel);
   border: 1px solid var(--line);
   color: var(--text);
   padding: 7px 12px;
   border-radius: 8px;
   transition: background .12s, border-color .12s;
 }
-button:hover:not(:disabled) { background: #232b3b; border-color: #33405a; }
+button:hover:not(:disabled) { background: var(--panel-2); border-color: var(--brand-500); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 
 button.primary {
@@ -80,7 +101,7 @@ button.primary {
   color: #fff;
   font-weight: 600;
 }
-button.primary:hover:not(:disabled) { background: #3d7ceb; border-color: #3d7ceb; }
+button.primary:hover:not(:disabled) { background: #2f3a32; border-color: #2f3a32; }
 
 button.ghost { background: transparent; border-color: transparent; color: var(--dim); padding: 4px 8px; }
 button.ghost:hover:not(:disabled) { background: var(--panel-2); color: var(--text); }
@@ -88,7 +109,7 @@ button.ghost:hover:not(:disabled) { background: var(--panel-2); color: var(--tex
 button.danger:hover:not(:disabled) { border-color: var(--bad); color: var(--bad); }
 
 input, select, textarea {
-  background: #0d1117;
+  background: var(--field);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 7px 10px;
@@ -109,19 +130,33 @@ select.mini { padding: 4px 26px 4px 8px; }
 
 .topbar {
   display: flex; align-items: center; gap: 14px;
-  padding-bottom: var(--sp-4); margin-bottom: var(--sp-4);
-  border-bottom: 1px solid var(--line-soft);
+  background: var(--brand-900);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
 }
-.brand { font-size: 17px; font-weight: 650; letter-spacing: -.2px; }
-.brand span { color: var(--dimmer); font-weight: 400; margin-left: 8px; font-size: 13px; }
+.brand { font-size: 17px; font-weight: 650; letter-spacing: -.2px; color: #fff; }
+.brand span { color: rgba(255, 255, 255, .62); font-weight: 400; margin-left: 8px; font-size: 13px; }
 .spacer { flex: 1; }
+
+/* Everything inside the dark band reads against it, not against the page. */
+.topbar .budget { color: rgba(255, 255, 255, .72); }
+.topbar .meter { background: rgba(255, 255, 255, .22); }
+.topbar .meter i { background: #fff; }
 
 .tabs { display: flex; gap: 4px; }
 .tabs button {
-  background: transparent; border-color: transparent; color: var(--dim);
+  background: transparent; border-color: transparent;
+  color: rgba(255, 255, 255, .72);
   border-radius: 8px; padding: 6px 12px;
 }
-.tabs button.on { background: var(--panel-2); color: var(--text); border-color: var(--line); }
+.tabs button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .1); border-color: transparent; color: #fff;
+}
+.tabs button.on {
+  background: #fff; color: var(--brand-900); border-color: #fff; font-weight: 600;
+}
 
 .panel {
   background: var(--panel);
@@ -129,6 +164,7 @@ select.mini { padding: 4px 26px 4px 8px; }
   border-radius: var(--radius);
   padding: var(--sp-4);
   margin-bottom: var(--sp-3);
+  box-shadow: 0 1px 2px rgba(60, 73, 63, .04);
 }
 .panel h2 { margin: 0 0 4px; font-size: 14px; font-weight: 650; }
 .panel .sub { color: var(--dim); font-size: 12.5px; margin: 0 0 14px; }
@@ -143,6 +179,7 @@ select.mini { padding: 4px 26px 4px 8px; }
 .stat {
   background: var(--panel); border: 1px solid var(--line-soft);
   border-radius: var(--radius); padding: var(--sp-3) var(--sp-3);
+  box-shadow: 0 1px 2px rgba(60, 73, 63, .04);
 }
 .stat .v { font-size: 21px; font-weight: 650; margin-top: 5px; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
 .stat .n { color: var(--dimmer); font-size: 11.5px; margin-top: 3px; }
@@ -151,8 +188,8 @@ select.mini { padding: 4px 26px 4px 8px; }
 
 /* Scenario tiles double as buttons that reveal their per-card breakdown. */
 .stat-btn { cursor: pointer; transition: border-color .12s, background .12s; }
-.stat-btn:hover { border-color: var(--line); background: #12171f; }
-.stat-open { border-color: var(--accent-dim); background: #12171f; }
+.stat-btn:hover { border-color: var(--brand-500); background: var(--brand-050); }
+.stat-open { border-color: var(--accent); background: var(--brand-050); }
 .stat .k { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .stat-caret { color: var(--dimmer); font-size: 10px; }
 
@@ -160,7 +197,7 @@ select.mini { padding: 4px 26px 4px 8px; }
   margin-top: 8px;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  background: #0d1117;
+  background: var(--brand-050);
   padding: 4px 12px;
   max-height: 260px;
   overflow-y: auto;
@@ -188,7 +225,7 @@ select.mini { padding: 4px 26px 4px 8px; }
 .tbl-wrap::-webkit-scrollbar-thumb {
   background: var(--line); border-radius: 5px; border: 2px solid var(--panel);
 }
-.tbl-wrap::-webkit-scrollbar-thumb:hover { background: #3a4557; }
+.tbl-wrap::-webkit-scrollbar-thumb:hover { background: var(--brand-500); }
 
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
 /* Horizontal padding is deliberately tight. With thirteen columns every pixel
@@ -227,7 +264,7 @@ th.card-col, td.card-col { min-width: 190px; }
 /* Narrow columns whose contents are always short. */
 th.qty-col, td.qty-col { width: 46px; }
 tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: #151b25; }
+tbody tr:hover { background: var(--brand-050); }
 
 .cardname { font-weight: 550; }
 .cardmeta { color: var(--dimmer); font-size: 12px; margin-top: 2px; }
@@ -244,8 +281,8 @@ td.num .cardmeta { white-space: nowrap; }
 }
 /* A card is only ever in the backlog or in a submission -- the status is
    derived from that, never set by hand. */
-.pill.backlog { color: #8b95a5; }
-.pill.submitted { color: var(--accent); border-color: var(--accent-dim); background: #16233d; }
+.pill.backlog { color: var(--dim); }
+.pill.submitted { color: var(--brand-900); border-color: var(--brand-500); background: var(--panel-2); }
 
 .verdict { font-weight: 600; font-variant-numeric: tabular-nums; }
 .verdict.strong { color: var(--good); }
@@ -272,14 +309,14 @@ td.num .cardmeta { white-space: nowrap; }
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
   padding: 10px 10px 2px;
-  background: #0d1117;
+  background: var(--brand-050);
 }
 .search-results::-webkit-scrollbar { width: 10px; }
 .search-results::-webkit-scrollbar-track { background: transparent; }
 .search-results::-webkit-scrollbar-thumb {
-  background: var(--line); border-radius: 5px; border: 2px solid #0d1117;
+  background: var(--brand-200); border-radius: 5px; border: 2px solid var(--brand-050);
 }
-.search-results::-webkit-scrollbar-thumb:hover { background: #3a4557; }
+.search-results::-webkit-scrollbar-thumb:hover { background: var(--brand-500); }
 
 .result {
   border: 1px solid var(--line-soft); border-radius: var(--radius);
@@ -289,12 +326,12 @@ td.num .cardmeta { white-space: nowrap; }
 .variants { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .variant {
   display: flex; align-items: center; gap: 8px;
-  background: #0d1117; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--field); border: 1px solid var(--line); border-radius: 8px;
   padding: 5px 9px; font-size: 12.5px;
 }
-.variant:hover:not(:disabled) { border-color: var(--accent-dim); background: #101a2c; }
+.variant:hover:not(:disabled) { border-color: var(--accent); background: var(--panel-2); }
 .variant b { font-variant-numeric: tabular-nums; }
-.variant.added { border-color: #1f5c2b; color: var(--good); }
+.variant.added { border-color: var(--good); color: var(--good); }
 
 /* ---------- misc ---------- */
 
@@ -308,14 +345,14 @@ td.num .cardmeta { white-space: nowrap; }
   border-radius: 8px; padding: 10px 13px; margin-bottom: 14px;
   border: 1px solid; font-size: 13px;
 }
-.banner.err { background: #2b1416; border-color: #6b2226; color: #ffb3b0; }
-.banner.info { background: #10203a; border-color: #234070; color: #a8c7f5; }
+.banner.err { background: #fdecea; border-color: #f3c3bd; color: #8c1d18; }
+.banner.info { background: var(--panel-2); border-color: var(--brand-200); color: var(--brand-900); }
 
 /* An offer, not app output. Dashed and tinted so it never reads as one of the
    app's own figures or a system message. */
 .promo {
   border: 1px dashed var(--accent-dim);
-  background: #101a2c;
+  background: var(--panel-2);
   border-radius: var(--radius);
   padding: var(--sp-2) var(--sp-3);
   margin-bottom: var(--sp-3);
@@ -323,8 +360,8 @@ td.num .cardmeta { white-space: nowrap; }
 }
 .promo-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  background: #0d1117;
-  border: 1px solid var(--accent-dim);
+  background: var(--panel);
+  border: 1px solid var(--brand-500);
   border-radius: 6px;
   padding: 1px 7px;
   color: var(--accent);
@@ -339,13 +376,13 @@ td.num .cardmeta { white-space: nowrap; }
 .grade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin-top: 10px; }
 .grade {
   border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
-  background: #0d1117; text-align: center;
+  background: var(--panel); text-align: center;
 }
-.grade.sel { border-color: var(--accent); background: #16233d; }
+.grade.sel { border-color: var(--accent); background: var(--panel-2); }
 .grade .g { font-size: 11.5px; color: var(--dim); }
 .grade .p { font-weight: 650; margin-top: 3px; font-variant-numeric: tabular-nums; }
 
-.expand { background: #10151d; }
+.expand { background: var(--brand-050); }
 .expand td { padding: var(--sp-4); }
 .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-5); }
 .detail label { display: block; margin-bottom: var(--sp-2); }
@@ -395,7 +432,7 @@ td.num .cardmeta { white-space: nowrap; }
   cursor: pointer;
   border-radius: 0;
 }
-.link-sub:hover { background: none; text-decoration: underline; color: #6fa4ff; }
+.link-sub:hover { background: none; text-decoration: underline; color: var(--brand-500); }
 
 /* Briefly marks the submission you just jumped to. */
 .panel.flash { animation: panel-flash 1.4s ease-out; }
@@ -409,13 +446,13 @@ td.num .cardmeta { white-space: nowrap; }
   border-radius: 4px;
   display: block;
   object-fit: cover;
-  background: #0d1117;
+  background: var(--field);
   border: 1px solid var(--line-soft);
 }
 .thumb-empty {
   border-radius: 4px;
   border: 1px dashed var(--line);
-  background: #0d1117;
+  background: var(--field);
   flex-shrink: 0;
 }
 .card-cell { display: flex; align-items: center; gap: 10px; }
@@ -430,7 +467,7 @@ td.num .cardmeta { white-space: nowrap; }
   border-radius: 10px;
   border: 1px solid var(--line);
   box-shadow: 0 20px 50px rgba(0, 0, 0, .6);
-  background: #0d1117;
+  background: var(--field);
   pointer-events: none;
   animation: thumb-pop .12s ease-out;
 }

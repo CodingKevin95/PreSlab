@@ -277,7 +277,7 @@ export default function ScreenerPanel({
                 <>
                   {' · '}
                   {scanInfo.freePages === scanInfo.pages ? (
-                    <span style={{ color: 'var(--good, #3fb950)' }}>
+                    <span style={{ color: 'var(--good)' }}>
                       free, already cached
                     </span>
                   ) : scanInfo.freePages > 0 ? (
@@ -319,7 +319,7 @@ export default function ScreenerPanel({
               -first makes them common rather than rare, so this cannot be left
               to a tooltip on the row. */}
           {rows.some((r) => r.noTier) && (
-            <p className="small" style={{ marginTop: 10, marginBottom: 0, color: '#d9a441' }}>
+            <p className="small" style={{ marginTop: 10, marginBottom: 0, color: 'var(--warn)' }}>
               {rows.filter((r) => r.noTier).length} of these are worth more than your
               highest grading tier covers, so they are costed as though grading were
               free and their ROI is too high.{' '}
@@ -390,7 +390,7 @@ export default function ScreenerPanel({
                             {suspect && (
                               <span
                                 className="small"
-                                style={{ marginLeft: 6, color: '#d9a441' }}
+                                style={{ marginLeft: 6, color: 'var(--warn)' }}
                                 title={reasons.join('\n\n')}
                               >
                                 ⚠ check
@@ -415,7 +415,7 @@ export default function ScreenerPanel({
                         a.tier.name
                       ) : (
                         <span
-                          style={{ color: '#d9a441' }}
+                          style={{ color: 'var(--warn)' }}
                           title={
                             `No tier covers a declared value of ${money(a.declared)}. Your highest ` +
                             `tier stops below it, so this card is costed as though grading were ` +

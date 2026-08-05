@@ -746,14 +746,9 @@ export default function App() {
   // Disabling them up front beats letting each one error in turn.
   const outOfCredits = usage?.dailyRemaining === 0
 
-  const dailyLimit = usage?.dailyLimit ?? budget.limit ?? 100
-  const used = usage?.dailyLimit != null && usage?.dailyRemaining != null
-    ? usage.dailyLimit - usage.dailyRemaining
-    : budget.used
-  const pct = Math.min(100, (used / dailyLimit) * 100)
-  // Guarded against zero as well as absent: dividing the meter width by it
-  // would render NaN% and collapse the bar.
-  const sharedPool = usage?.sharedPool > 0 ? usage.sharedPool : 2000
+  // The used/limit/percentage figures that lived here only ever fed the meter
+  // in the top bar. Usage itself is still tracked -- outOfCredits above comes
+  // from it and still disables the buttons that spend credits.
 
   return (
     <div className="app">
@@ -763,38 +758,15 @@ export default function App() {
         </div>
         <div className="spacer" />
         <SaveState disk={disk} />
-        {/* On the shared trial key the meaningful number is the trial
-            allowance, not the account's whole daily quota. */}
-        {/* Falls back to the previous fixed allowance if the pool header is
-            absent, so an older cached response cannot divide by zero. */}
-        {usage?.sharedLeft != null ? (
-          <div
-            className="budget"
-            title="Shared with everyone using this link, and stops at a reserve kept for the owner. Add your own free key in Settings for your own daily quota."
-          >
-            <span>{usage.sharedLeft.toLocaleString()} shared lookups left</span>
-            <div className="meter">
-              <i
-                className={
-                  usage.sharedLeft < sharedPool * 0.05
-                    ? 'bad'
-                    : usage.sharedLeft < sharedPool * 0.2 ? 'warn' : ''
-                }
-                style={{ width: Math.min(100, (usage.sharedLeft / sharedPool) * 100) + '%' }}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="budget" title="Credits are charged per card, not per request. Resets daily.">
-            <span>{used}/{dailyLimit} calls today</span>
-            <div className="meter">
-              <i
-                className={pct > 90 ? 'bad' : pct > 70 ? 'warn' : ''}
-                style={{ width: pct + '%' }}
-              />
-            </div>
-          </div>
-        )}
+        {/*
+          The running credit meter used to sit here. It reported a number
+          nobody acts on -- what costs credits is stated on the button that
+          spends them, and running out produces an error that says so plainly,
+          so a permanent counter was noise in the one place that should stay
+          calm.
+
+          Still tracked and still enforced; only the readout is gone.
+        */}
         <div className="tabs">
           {[
             ['backlog', 'Backlog'],
