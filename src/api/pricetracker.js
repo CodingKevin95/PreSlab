@@ -101,6 +101,17 @@ let recentRequests = (load(RATE_KEY, []) || []).filter(
 */
 let pauseUntil = 0
 
+/*
+  The last thing the API said about the current minute.
+
+  Its window is fixed and resets on a timestamp; the local one rolls over the
+  last sixty seconds. They disagree most right after a large batch: the API's
+  window resets and hands back a full allowance while the rolling window is
+  still holding the tail of the batch, so a single request afterwards could sit
+  waiting a minute for room that already existed.
+*/
+let apiMinute = { remaining: null, reset: 0 }
+
 async function acquireSlot() {
   for (;;) {
     const now = Date.now()
@@ -108,6 +119,20 @@ async function acquireSlot() {
     if (now < pauseUntil) {
       await sleep(pauseUntil - now + 50)
       continue
+    }
+
+    /*
+      Believe the API over our own count when it has spoken about the window we
+      are actually in.
+
+      Held well clear of empty because the reading is from the last response
+      and several requests can be in flight behind it. The local window still
+      records everything, so it takes over the moment this reading expires.
+    */
+    if (apiMinute.reset > now && apiMinute.remaining > 8) {
+      recentRequests.push(now)
+      save(RATE_KEY, recentRequests)
+      return
     }
 
     recentRequests = recentRequests.filter((t) => now - t < RATE_WINDOW_MS)
@@ -240,8 +265,11 @@ async function request(path, { retried = false } = {}) {
     Believing the API here means a batch pauses before it is refused rather
     than after.
   */
-  if (usage.minuteRemaining != null && usage.minuteRemaining <= 2 && usage.minuteReset) {
-    pauseUntil = Math.max(pauseUntil, usage.minuteReset * 1000 + 250)
+  if (usage.minuteRemaining != null && usage.minuteReset) {
+    apiMinute = { remaining: usage.minuteRemaining, reset: usage.minuteReset * 1000 }
+    if (usage.minuteRemaining <= 2) {
+      pauseUntil = Math.max(pauseUntil, usage.minuteReset * 1000 + 250)
+    }
   }
 
   /**
