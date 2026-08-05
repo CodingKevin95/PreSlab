@@ -244,6 +244,25 @@ function Submission({
         </select>
       </div>
 
+      {!open && (
+        <div className="sub-peek">
+          {cards.slice(0, 3).map((c) => (
+            <span className="peek-card" key={c.id}>
+              <CardThumb src={c.image} alt={c.name} width={22} />
+              <span className="peek-name">{c.name}</span>
+            </span>
+          ))}
+          {cards.length > 3 && (
+            <span className="small muted">+{cards.length - 3} more</span>
+          )}
+          {cards.length === 0 && <span className="small muted">No cards yet</span>}
+          <div className="spacer" />
+          {sub.tracking && <span className="peek-num">#{sub.tracking}</span>}
+        </div>
+      )}
+
+      {open && (
+      <>
       <div className="sec">
         <div className="sec-head"><span className="micro">If every card hits its target</span></div>
         <div className="stats">
@@ -391,8 +410,6 @@ function Submission({
         </div>
       )}
 
-      {open && (
-        <>
           {/*
             Adds straight into this batch rather than the loose backlog. The
             same component the backlog uses, so a card added here is fetched,
