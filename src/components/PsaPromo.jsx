@@ -22,7 +22,7 @@ export default function PsaPromo() {
     <div className="promo">
       <b>First PSA submission?</b> Use code{' '}
       <code className="promo-code">Yuri25</code> at checkout to save $25
-      <span className="muted"> · new PSA accounts only</span>
+      <span className="muted"> · new account/email only</span>
     </div>
   )
 }
