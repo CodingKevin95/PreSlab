@@ -826,6 +826,10 @@ export default function App() {
             </div>
           )}
 
+          <div style={{ marginBottom: 16 }}>
+            <StatsBar roll={roll} />
+          </div>
+
           <SearchPanel
             onAdd={addCard}
             qtyOf={qtyOf}
@@ -834,10 +838,6 @@ export default function App() {
             onError={reportError}
             seed={addSeed}
           />
-
-          <div style={{ marginBottom: 16 }}>
-            <StatsBar roll={roll} />
-          </div>
 
           <div className="row wrap" style={{ marginBottom: 14 }}>
             <div style={{ position: 'relative', width: 260 }}>

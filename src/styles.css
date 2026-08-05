@@ -28,7 +28,7 @@
      panels -- on a dark theme the page is the easier surface, the reverse of
      a light one, and it is still worth confirming rather than assuming. */
   --dim: #a9acae;
-  --dimmer: #8f9295;
+  --dimmer: #9ea1a4;
 
   --accent: #e9e9e9;
   --accent-dim: #6f7376;
@@ -191,6 +191,11 @@ select.mini { padding: 4px 26px 4px 8px; }
 .stat .v { font-size: 21px; font-weight: 650; margin-top: 5px; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
 .stat .n { color: var(--dimmer); font-size: 11.5px; margin-top: 3px; }
 .stat .v.good { color: var(--good); }
+
+/* The outcome tile. Carries weight rather than colour, so it still leads for
+   anyone who cannot tell the green from the red. */
+.stat-lead { border-color: var(--line); background: var(--panel-2); }
+.stat-lead .v { font-size: 26px; }
 .stat .v.bad { color: var(--bad); }
 
 /* Scenario tiles double as buttons that reveal their per-card breakdown. */

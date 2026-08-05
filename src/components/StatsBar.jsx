@@ -48,14 +48,23 @@ export default function StatsBar({ roll }) {
           (roll.missingComps > 0 ? ` · excludes ${roll.missingComps} without comps` : '')
         }
         tone={net > 0 ? 'good' : net < 0 ? 'bad' : null}
+        lead
       />
     </div>
   )
 }
 
-function Stat({ k, v, n, tone }) {
+/**
+ * @param lead The one figure the page exists to answer.
+ *
+ * Six tiles at identical weight leave nothing to look at first, so the eye has
+ * to read all of them to find out which matters. This app asks whether cards
+ * are worth grading; the projected net is the answer, and it should be
+ * findable without reading the other five.
+ */
+function Stat({ k, v, n, tone, lead }) {
   return (
-    <div className="stat">
+    <div className={'stat' + (lead ? ' stat-lead' : '')}>
       <div className="k">{k}</div>
       <div className={'v' + (tone ? ' ' + tone : '')}>{v}</div>
       <div className="n">{n}</div>
