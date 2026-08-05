@@ -645,37 +645,11 @@ function Row({
                       <span>PSA {a.targetGrade} sells for</span>
                       <span>{money(a.gradedPrice)}</span>
                     </div>
-                    {a.priceSource && (
-                      /* Spelled out on hover: the shorthand says which figure
-                         was used but not what it is made of, and the sale
-                         count and the window it covers are different things. */
-                      <div
-                        className="muted small calc-note"
-                        title={
-                          `Where this price comes from. ` +
-                          (a.priceSource.field === 'smart'
-                            ? `The provider's own estimate: recent eBay sales with extreme ` +
-                              `prices dropped and the rest weighted` +
-                              (a.priceSource.days ? `, covering the last ${a.priceSource.days} days. ` : '. ') +
-                              (a.priceSource.confidence
-                                ? `Confidence is ${a.priceSource.confidence}, meaning there were ` +
-                                  `${a.priceSource.confidence === 'high' ? 'plenty of' : 'few'} ` +
-                                  `consistent sales to work from. `
-                                : '')
-                            : `${a.priceSource.label}. `) +
-                          (a.gradeMeta?.count != null
-                            ? `${a.gradeMeta.count} graded sales on record for this grade in total.`
-                            : '')
-                        }
-                      >
-                        <span>
-                          {a.priceSource.label}
-                          {a.priceSource.confidence ? ` · ${a.priceSource.confidence} confidence` : ''}
-                          {a.gradeMeta?.count != null ? ` · ${a.gradeMeta.count} sales` : ''}
-                        </span>
-                        <span />
-                      </div>
-                    )}
+                    {/* The provenance line that sat here is gone. The comps
+                        tiles above still carry it on hover, and the warning
+                        below still fires when a price falls back off the basis
+                        you chose -- so the cases that need saying still get
+                        said, without a line on every row. */}
                     <div>
                       <span>Selling fees ({Math.round(a.feeRate * 100)}%)</span>
                       <span>−{money(a.gradedPrice * a.feeRate)}</span>
