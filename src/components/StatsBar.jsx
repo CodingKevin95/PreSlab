@@ -10,13 +10,17 @@ export default function StatsBar({ roll }) {
         v={String(roll.count)}
         n={roll.lines !== roll.count ? `${roll.lines} unique` : 'in backlog'}
       />
+      {/* The count of assumed copies stays alongside the plain description.
+          Most of this total is usually market value rather than money that
+          actually left your pocket, and a tile reading only "how much you
+          spent" over $15,840 would state that as fact. */}
       <Stat
         k="Spent"
         v={money(roll.spentTotal, { cents: false })}
         n={
           roll.assumedUnits > 0
-            ? `${roll.assumedUnits} of ${roll.count} at market value`
-            : 'what you paid'
+            ? `how much you spent · ${roll.assumedUnits} of ${roll.count} at market value`
+            : 'how much you spent'
         }
       />
       <Stat
@@ -26,8 +30,8 @@ export default function StatsBar({ roll }) {
           roll.prices
             // The oldest price is what limits the total's freshness, so that
             // is the one worth naming.
-            ? `if sold ungraded · priced ${agoLabel(roll.prices.oldest)}`
-            : 'if sold ungraded'
+            ? `raw market value · priced ${agoLabel(roll.prices.oldest)}`
+            : 'raw market value'
         }
       />
       <Stat k="Grading cost" v={money(roll.costTotal, { cents: false })} n="PSA fees" />
