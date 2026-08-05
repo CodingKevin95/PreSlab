@@ -229,7 +229,7 @@ a.brand:hover { color: var(--dim); }
 }
 .scen-row {
   display: flex; justify-content: space-between; align-items: center; gap: 16px;
-  padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px;
+  padding: 7px 0; border-bottom: 1px solid var(--rule-faint); font-size: 13px;
 }
 .scen-row:last-child { border-bottom: none; }
 .scen-row span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -664,13 +664,22 @@ td.num .cardmeta { white-space: nowrap; }
    does with separate titled cards, without spending the width that real cards
    would cost.
 */
-.sec { margin-top: var(--sp-5); }
-.sec:first-of-type { margin-top: var(--sp-4); }
+.sec { margin-top: 34px; }
+.sec:first-of-type { margin-top: var(--sp-5); }
+/*
+   No rule under the heading.
+
+   One was added when the sections read as merged, before they had spacing or
+   a label. They have both now, and a full-width line under each meant seven
+   of them crossing a single submission -- enough that the lines became the
+   pattern rather than the content.
+
+   Space and a heading separate just as well and draw nothing, which is the
+   same reason the table columns lost their vertical rules.
+*/
 .sec-head {
   display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
-  padding-bottom: var(--sp-2);
   margin-bottom: var(--sp-3);
-  border-bottom: 1px solid var(--rule);
 }
 /* The heading holds its ground when a control sits beside it. */
 .sec-head .micro { flex: none; }
