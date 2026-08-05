@@ -58,7 +58,6 @@ import SearchPanel from './components/SearchPanel'
 import BacklogTable from './components/BacklogTable'
 import SettingsPanel from './components/SettingsPanel'
 import ScreenerPanel from './components/ScreenerPanel'
-import PsaPromo from './components/PsaPromo'
 
 /**
  * Whether market scanning is offered.
@@ -860,8 +859,6 @@ export default function App() {
           </span>
         </div>
       )}
-
-      <PsaPromo />
 
       {tab === 'backlog' && (
         <>
