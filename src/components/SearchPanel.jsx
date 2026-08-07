@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { searchCards } from '../api/pricetracker'
 import { loadSnapshot, localSearch, snapshotNow, coverageLabel } from '../lib/snapshot'
 import { money } from '../lib/psa'

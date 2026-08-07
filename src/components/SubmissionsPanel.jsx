@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
-  analyzeCard, money, percent, qtyOf, submissionUnits, gradeScenarios,
-  priceAsOf, agoLabel, SUBMISSION_STATUSES, tierForDeclaredValue, statusIdOf,
+  analyzeCard, money, percent, submissionUnits, gradeScenarios,
+  priceAsOf, agoLabel, SUBMISSION_STATUSES, statusIdOf,
   GRADE_OPTIONS, verdictOf,
 } from '../lib/psa'
 import CardThumb from './CardThumb'
@@ -286,7 +286,7 @@ function Submission({
         '', '', totals.graded.toFixed(2), '',
         '', '', totals.profit.toFixed(2), ''],
     ]
-    const safe = (sub.name || 'submission').replace(/[^\w\-]+/g, '-').toLowerCase()
+    const safe = (sub.name || 'submission').replace(/[^\w-]+/g, '-').toLowerCase()
     downloadCsv(`${safe}-${new Date().toISOString().slice(0, 10)}.csv`, rows)
   }
 

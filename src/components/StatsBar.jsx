@@ -1,4 +1,3 @@
-import React from 'react'
 import { money, agoLabel } from '../lib/psa'
 
 export default function StatsBar({ roll }) {

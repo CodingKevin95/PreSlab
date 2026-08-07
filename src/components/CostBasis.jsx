@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { money, percent, verdictOf } from '../lib/psa'
 
 /**

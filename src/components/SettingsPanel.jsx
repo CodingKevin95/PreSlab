@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { DEFAULT_TIERS, PRICE_BASES, money } from '../lib/psa'
+import { useState } from 'react'
+import { DEFAULT_TIERS, PRICE_BASES } from '../lib/psa'
 import { clearCache, getUserKey, setUserKey } from '../api/pricetracker'
 
 export default function SettingsPanel({

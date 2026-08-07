@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * Front door for people arriving at the link cold.

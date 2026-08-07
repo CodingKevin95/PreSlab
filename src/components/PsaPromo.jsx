@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * PSA referral offer, shown on every tab.

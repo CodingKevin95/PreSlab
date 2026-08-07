@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { getCard } from '../api/pricetracker'
 import CardThumb from './CardThumb'
 import CostBasis from './CostBasis'

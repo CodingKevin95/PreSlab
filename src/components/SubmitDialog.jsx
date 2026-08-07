@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { money, qtyOf } from '../lib/psa'
 import CardThumb from './CardThumb'
 

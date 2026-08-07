@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import { usePersisted, useCallBudget, uid } from './lib/storage'
 import { useDiskSync } from './lib/diskSync'
 import {
   DEFAULT_TIERS, STATUSES, DEFAULT_TARGET_GRADE,
-  rollUp, analyzeCard, money, submissionUnits, statusOf, costsOf, isCompleted,
+  rollUp, analyzeCard, submissionUnits, statusOf, costsOf, isCompleted,
 } from './lib/psa'
 import SubmissionsPanel from './components/SubmissionsPanel'
 import SubmitDialog from './components/SubmitDialog'

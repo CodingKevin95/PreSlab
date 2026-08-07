@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import CardThumb from './CardThumb'
 import { scanMarket, getSets } from '../api/pricetracker'
 import { screenMarket, money, percent } from '../lib/psa'
