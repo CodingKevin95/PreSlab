@@ -750,3 +750,21 @@ export function money(n, opts = {}) {
     maximumFractionDigits: opts.cents === false ? 0 : 2,
   })
 }
+
+/**
+ * Verdict class for a money figure that already has fees taken off.
+ *
+ * Distinct from verdictFor, which judges an uplift against the graded price it
+ * came from. This one judges an absolute amount: below zero loses money, a
+ * little above it is not worth the postage, and fifty dollars clear is a real
+ * result.
+ *
+ * Shared rather than copied so a threshold change cannot leave two tables
+ * colouring the same number differently.
+ */
+export function verdictOf(n) {
+  if (n == null) return 'unknown'
+  if (n >= 50) return 'strong'
+  if (n > 0) return 'marginal'
+  return 'negative'
+}

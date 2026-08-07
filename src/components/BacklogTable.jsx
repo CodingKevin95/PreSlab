@@ -4,16 +4,8 @@ import CardThumb from './CardThumb'
 import CostBasis from './CostBasis'
 import {
   analyzeCard, money, percent, nearestGrade, statusOf, STATUSES, GRADE_OPTIONS,
-  resolveGradePrice,
+  resolveGradePrice, verdictOf,
 } from '../lib/psa'
-
-// Same thresholds the main verdict uses, applied to the after-fee figure.
-function verdictOf(n) {
-  if (n == null) return 'unknown'
-  if (n >= 50) return 'strong'
-  if (n > 0) return 'marginal'
-  return 'negative'
-}
 
 export default function BacklogTable({
   cards, tiers, settings, onPatch, onRemove, onUsage, onError,

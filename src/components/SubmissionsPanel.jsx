@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   analyzeCard, money, percent, qtyOf, submissionUnits, gradeScenarios,
   priceAsOf, agoLabel, SUBMISSION_STATUSES, tierForDeclaredValue, statusIdOf,
-  GRADE_OPTIONS,
+  GRADE_OPTIONS, verdictOf,
 } from '../lib/psa'
 import CardThumb from './CardThumb'
 import CostBasis from './CostBasis'
@@ -207,14 +207,6 @@ function csvRow(card, a) {
     n(a.upliftVsPaid), n(a.lineProfit != null ? a.lineProfit / a.qty : null), n(a.lineProfit),
     a.profitRoi != null ? (a.profitRoi * 100).toFixed(1) : '',
   ]
-}
-
-// Same thresholds the backlog uses, so a figure reads the same colour in both.
-function verdictOf(n) {
-  if (n == null) return 'unknown'
-  if (n >= 50) return 'strong'
-  if (n > 0) return 'marginal'
-  return 'negative'
 }
 
 function Submission({

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { money, percent } from '../lib/psa'
+import { money, percent, verdictOf } from '../lib/psa'
 
 /**
  * Cost basis entry: one price per copy owned.
