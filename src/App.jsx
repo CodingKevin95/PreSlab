@@ -1107,6 +1107,8 @@ export default function App() {
           onDeleteSubmission={deleteSubmission}
           onRemoveCards={removeFromSubmission}
           onPatchCard={patchCard}
+          onRefreshCards={fetchCompsFor}
+          refreshing={Boolean(fetchingComps)}
           onGoToBacklog={() => setTab('backlog')}
           onAddCard={addCard}
           averageHitRate={averageHitRate}
@@ -1164,6 +1166,8 @@ export default function App() {
           onDeleteSubmission={deleteSubmission}
           onRemoveCards={removeFromSubmission}
           onPatchCard={patchCard}
+          onRefreshCards={fetchCompsFor}
+          refreshing={Boolean(fetchingComps)}
           onGoToBacklog={() => setTab('backlog')}
           qtyOf={qtyOf}
           adding={adding}

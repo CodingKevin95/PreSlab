@@ -13,6 +13,7 @@ export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
   onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError, onPatchCard,
+  onRefreshCards, refreshing,
   completed, onImportOrder, onUseRate, averageHitRate, focusId, onFocused,
 }) {
   const [q, setQ] = useState('')
@@ -151,6 +152,8 @@ export default function SubmissionsPanel({
           onRemoveCards={onRemoveCards}
           onAddCard={onAddCard}
           onPatchCard={onPatchCard}
+          onRefreshCards={onRefreshCards}
+          refreshing={refreshing}
           onUseRate={onUseRate}
           averageHitRate={averageHitRate}
           qtyOf={qtyOf}
@@ -211,6 +214,7 @@ function csvRow(card, a) {
 
 function Submission({
   sub, cards, allCards, tiers, settings, onPatch, onDelete, onRemoveCards, onPatchCard,
+  onRefreshCards, refreshing,
   onAddCard, qtyOf, adding, onUsage, onError, onUseRate, averageHitRate,
   focused, onFocused,
 }) {
@@ -244,6 +248,16 @@ function Submission({
 
   const units = submissionUnits(sub.id, allCards)
   const analyses = cards.map((c) => ({ card: c, a: analyzeCard(c, tiers, settings, units) }))
+
+  /*
+    Counted per card, not per row.
+
+    Two rows holding the same card in different printings share one lookup, and
+    quantity costs nothing extra, so quoting the row count would overstate the
+    price of pressing this.
+  */
+  const refreshCredits =
+    new Set(cards.map((c) => c.tcgPlayerId).filter(Boolean)).size * 2
 
 
   const totals = analyses.reduce(
@@ -749,6 +763,23 @@ function Submission({
           </div>
 
           <div className="row wrap" style={{ marginTop: 28, gap: 12 }}>
+            {/*
+              Prices go stale while a batch sits at PSA for weeks, and this is
+              where you look when it comes back. Refreshes graded comps as well
+              as the raw price, because every figure on this page above the
+              table is built on the graded number: raw alone would move the one
+              column that matters least and leave the profit stale.
+            */}
+            {onRefreshCards && refreshCredits > 0 && (
+              <button
+                style={{ alignSelf: 'flex-end' }}
+                onClick={() => onRefreshCards(cards.map((c) => c.id))}
+                disabled={refreshing}
+                title="Fetch today's price and graded sales for every card here, 2 credits each"
+              >
+                {refreshing ? 'Refreshing…' : `Refresh prices (${refreshCredits} credits)`}
+              </button>
+            )}
             <div className="grow" />
             <button
               style={{ alignSelf: 'flex-end' }}
