@@ -32,19 +32,25 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
   // Shown beside the search rather than only in the page banner, which is
   // easy to miss when the failure was caused by the button you just pressed.
   const [failed, setFailed] = useState(null)
+  // Whether the last API search ran off the back of an empty local one.
+  const [auto, setAuto] = useState(false)
 
   const [hasSnapshot, setHasSnapshot] = useState(false)
   useEffect(() => { loadSnapshot().then((i) => setHasSnapshot(!!i)) }, [])
 
   /*
-    Looks in the shipped snapshot first and shows what it finds for free.
+    Looks in the stored sets first, then carries on to the API by itself.
 
-    The API search is left as a separate, deliberate press rather than a
-    fallback that fires on its own. It costs a credit per result, and spending
-    silently because a local search came up short is exactly the behaviour
-    people resent.
+    The stored sets cover two eras. Stopping at an empty result made every
+    other era look as though it did not exist, so a search that found nothing
+    locally now completes against the full catalogue rather than handing back a
+    blank and waiting to be asked again.
+
+    It still costs a credit per result, so the fall-through is stated once the
+    results are up rather than passed over in silence. Nothing is spent while
+    the stored sets can answer.
   */
-  function runLocal(e) {
+  async function runLocal(e) {
     e?.preventDefault()
     const term = q.trim()
     if (!term) return
@@ -56,10 +62,17 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
 
     onError(null)
     setResults(null)
-    setLocal(localSearch(term, limit))
+    const hits = localSearch(term, limit)
+    if (hits.length > 0) {
+      setLocal(hits)
+      return
+    }
+
+    setLocal(null)
+    await run(e, { auto: true })
   }
 
-  async function run(e) {
+  async function run(e, { auto = false } = {}) {
     e?.preventDefault()
     const term = q.trim()
     if (!term) return
@@ -70,6 +83,9 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
       const r = await searchCards({ q: term, limit, language })
       setResults(r.data)
       setLocal(null)
+      // Records that this ran on its own rather than being asked for, so the
+      // results can account for credits that were spent without a press.
+      setAuto(auto && !r.cached)
       setTotal(r.total ?? r.data.length)
       setFromCache(r.cached)
       if (r.usage) onUsage(r.usage)
@@ -167,11 +183,11 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
             </div>
           )}
           <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
-            Not here?{' '}
+            Looking for another era?{' '}
             <button className="ghost small" onClick={run} disabled={busy}>
-              {busy ? 'Searching…' : `Search every card (${limit} credits)`}
+              {busy ? 'Searching…' : `Search every era (${limit} credits)`}
             </button>{' '}
-            looks beyond the stored sets, at one credit per result.
+            covers the full catalogue, at one credit per result.
           </p>
         </div>
       )}
@@ -180,9 +196,10 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
         <div style={{ marginTop: 16 }}>
           <div className="small muted" style={{ marginBottom: 10 }}>
             {results.length === 0
-              ? 'No matches.'
-              : `Showing ${results.length} of ${total} match${total === 1 ? '' : 'es'}`}
+              ? 'No matches in any era.'
+              : `Showing ${results.length} of ${total} match${total === 1 ? '' : 'es'}, every era`}
             {fromCache && results.length > 0 && ' · from cache (no credits used)'}
+            {auto && results.length > 0 && ` · not in the stored sets, so this searched the full catalogue (${results.length} credits)`}
           </div>
           {/* Results scroll inside their own box so a 100-result search does
               not push the backlog off the bottom of the page. */}

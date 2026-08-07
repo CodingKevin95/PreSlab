@@ -19,8 +19,8 @@ const HELP = {
       {
         h: 'Adding cards',
         items: [
-          'Search by name, and include the set to narrow it down. This looks through the sets stored with the app and costs nothing.',
-          'If what you want is not there, Search every card goes to the API for one credit per result. Adding a card costs two more for its price and graded sales.',
+          'Search by name, and include the set to narrow it down. Every era is searchable.',
+          'Stored sets answer for free. Anything outside them falls through to the full catalogue at one credit per result, and the results say when that happened. Adding a card costs two more for its price and graded sales.',
           'Japanese cards live in a separate collection, so switch the language or an English search will not find them.',
           'Repeating a search is free. Results are cached.',
         ],
