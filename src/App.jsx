@@ -1106,6 +1106,7 @@ export default function App() {
           }}
           onDeleteSubmission={deleteSubmission}
           onRemoveCards={removeFromSubmission}
+          onPatchCard={patchCard}
           onGoToBacklog={() => setTab('backlog')}
           onAddCard={addCard}
           averageHitRate={averageHitRate}
@@ -1162,6 +1163,7 @@ export default function App() {
           onPatchSubmission={patchSubmission}
           onDeleteSubmission={deleteSubmission}
           onRemoveCards={removeFromSubmission}
+          onPatchCard={patchCard}
           onGoToBacklog={() => setTab('backlog')}
           qtyOf={qtyOf}
           adding={adding}

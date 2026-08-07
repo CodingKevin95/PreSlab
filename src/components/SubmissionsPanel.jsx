@@ -5,13 +5,14 @@ import {
   GRADE_OPTIONS,
 } from '../lib/psa'
 import CardThumb from './CardThumb'
+import CostBasis from './CostBasis'
 import SearchPanel from './SearchPanel'
 import { parsePsaOrderCsv, summariseOrder } from '../lib/psaOrder'
 
 export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
-  onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError,
+  onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError, onPatchCard,
   completed, onImportOrder, onUseRate, averageHitRate, focusId, onFocused,
 }) {
   const [q, setQ] = useState('')
@@ -149,6 +150,7 @@ export default function SubmissionsPanel({
           onDelete={() => onDeleteSubmission(s.id)}
           onRemoveCards={onRemoveCards}
           onAddCard={onAddCard}
+          onPatchCard={onPatchCard}
           onUseRate={onUseRate}
           averageHitRate={averageHitRate}
           qtyOf={qtyOf}
@@ -216,7 +218,7 @@ function verdictOf(n) {
 }
 
 function Submission({
-  sub, cards, allCards, tiers, settings, onPatch, onDelete, onRemoveCards,
+  sub, cards, allCards, tiers, settings, onPatch, onDelete, onRemoveCards, onPatchCard,
   onAddCard, qtyOf, adding, onUsage, onError, onUseRate, averageHitRate,
   focused, onFocused,
 }) {
@@ -225,6 +227,9 @@ function Submission({
   // creating one, still opens it -- see the focus effect below.
   const [open, setOpen] = useState(false)
   const [openCase, setOpenCase] = useState(null)
+  // One priced card open at a time, matching the backlog. Entering costs is a
+  // one-card-at-a-time job, and several open rows push the table off the page.
+  const [openCard, setOpenCard] = useState(null)
   const ref = useRef(null)
 
   // Arriving from a backlog row: scroll this one into view and flash it, so
@@ -607,6 +612,7 @@ function Submission({
                   {/* Same columns, same order as the backlog table -- a card
                       should not look different depending on where you view it.
                       Status is omitted because everything here is submitted. */}
+                  <th style={{ width: 30 }}></th>
                   <th className="card-col">Card</th>
                   <th className="num qty-col">Qty</th>
                   <th
@@ -638,7 +644,19 @@ function Submission({
               </thead>
               <tbody>
                 {analyses.map(({ card, a }) => (
-                  <tr key={card.id}>
+                  <React.Fragment key={card.id}>
+                  <tr>
+                    <td>
+                      {/* Same disclosure as the backlog, so a card is priced
+                          the same way wherever you happen to be looking at it. */}
+                      <button
+                        className="disclose"
+                        onClick={() => setOpenCard(openCard === card.id ? null : card.id)}
+                        title={openCard === card.id ? 'Hide what you paid' : 'Enter what you paid'}
+                      >
+                        {openCard === card.id ? '−' : '+'}
+                      </button>
+                    </td>
                     <td className="card-col">
                       <div className="card-cell">
                         <CardThumb src={card.image} alt={card.name} width={38} />
@@ -704,10 +722,31 @@ function Submission({
                       </button>
                     </td>
                   </tr>
+                  {openCard === card.id && (
+                    <tr className="expand">
+                      <td colSpan={2}></td>
+                      <td colSpan={9}>
+                        <div className="detail">
+                          <label>What you paid</label>
+                          <p className="small muted" style={{ margin: '0 0 8px' }}>
+                            {a.assumedCount > 0
+                              ? `${a.assumedCount} of ${a.qty} cop${a.assumedCount === 1 ? 'y is' : 'ies are'} counted at market value until you enter a price.`
+                              : 'Every copy is priced from what you actually paid.'}
+                          </p>
+                          <CostBasis
+                            card={card}
+                            a={a}
+                            onPatch={(patch) => onPatchCard(card.id, patch)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 ))}
                 {analyses.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="muted small" style={{ textAlign: 'center', padding: 24 }}>
+                    <td colSpan={11} className="muted small" style={{ textAlign: 'center', padding: 24 }}>
                       Empty. Search above, or tick cards in the backlog and add them here.
                     </td>
                   </tr>
