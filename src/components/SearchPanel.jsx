@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { searchCards } from '../api/pricetracker'
-import { loadSnapshot, localSearch, snapshotNow } from '../lib/snapshot'
+import { loadSnapshot, localSearch, snapshotNow, coverageLabel } from '../lib/snapshot'
 import { money } from '../lib/psa'
 import CardThumb from './CardThumb'
 
@@ -147,9 +147,9 @@ export default function SearchPanel({ onAdd, qtyOf, onUsage, onError, adding, se
         <div style={{ marginTop: 16 }}>
           <div className="small muted" style={{ marginBottom: 10 }}>
             {local.length === 0
-              ? 'Nothing in the sets shipped with the app.'
-              : `${local.length} from the sets shipped with the app, no credits used`}
-            {snapshotNow()?.sets?.length
+              ? `No match in the stored sets${coverageLabel() ? ` (${coverageLabel()})` : ''}. Cards from other eras need the full search below.`
+              : `${local.length} from the stored sets, no credits used`}
+            {local.length > 0 && snapshotNow()?.sets?.length
               ? ` · ${snapshotNow().sets.length} sets stored`
               : ''}
           </div>

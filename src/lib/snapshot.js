@@ -85,6 +85,21 @@ export function snapshotNow() {
   return index
 }
 
+/**
+ * The eras the snapshot covers, as prose.
+ *
+ * An empty local result is only understandable if you can see what was
+ * searched. "Nothing found" against an unnamed set of stored sets reads as a
+ * broken search rather than one looking somewhere the card was never going to
+ * be, which is exactly how it was read.
+ */
+export function coverageLabel() {
+  const names = [...new Set((index?.sets || []).map((s) => s.series).filter(Boolean))]
+  if (!names.length) return null
+  if (names.length === 1) return names[0]
+  return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1]
+}
+
 /** One card by TCGplayer id, in the shape the rest of the app expects. */
 export function localCard(tcgPlayerId) {
   const hit = index?.byId.get(String(tcgPlayerId))
