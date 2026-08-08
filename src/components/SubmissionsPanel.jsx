@@ -692,7 +692,35 @@ function Submission({
                     </td>
                     <td className="num">{money(a.raw)}</td>
                     <td className="grp">
-                      <span className="pill">{a.tier ? a.tier.name : 'none'}</span>
+                      {/*
+                        Same control as the Backlog, but the card minimum is
+                        checked against this batch rather than the shipment size
+                        in Settings. A tier needing twenty cards is genuinely
+                        available to a submission holding twenty, and the global
+                        figure is only ever a guess at that.
+                      */}
+                      <select
+                        className="mini"
+                        value={card.tierId || ''}
+                        onChange={(e) =>
+                          onPatchCard(card.id, { tierId: e.target.value || null })
+                        }
+                        style={{ width: 148 }}
+                        title={`Declared at ${money(a.declared)}`}
+                      >
+                        <option value="">
+                          {a.tier ? `Auto · ${a.tier.name}` : 'Auto · none fits'}
+                        </option>
+                        {tiers.map((t) => {
+                          const min = Number(t.minCards) || 1
+                          const locked = units < min
+                          return (
+                            <option key={t.id} value={t.id}>
+                              {t.name} · {money(t.fee)}{locked ? ` (${min}+)` : ''}
+                            </option>
+                          )
+                        })}
+                      </select>
                     </td>
                     <td>PSA {a.targetGrade}</td>
                     <td className="num grp">
