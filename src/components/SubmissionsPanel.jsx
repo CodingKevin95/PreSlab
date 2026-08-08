@@ -6,6 +6,7 @@ import {
 } from '../lib/psa'
 import CardThumb from './CardThumb'
 import CostBasis from './CostBasis'
+import RemoveCardDialog from './RemoveCardDialog'
 import SearchPanel from './SearchPanel'
 import { parsePsaOrderCsv, summariseOrder } from '../lib/psaOrder'
 
@@ -13,7 +14,7 @@ export default function SubmissionsPanel({
   submissions, cards, tiers, settings,
   onPatchSubmission, onDeleteSubmission, onRemoveCards, onGoToBacklog,
   onAddCard, onNewSubmission, qtyOf, adding, onUsage, onError, onPatchCard,
-  onRefreshCards, refreshing,
+  onRefreshCards, refreshing, onDeleteCards,
   completed, onImportOrder, onUseRate, averageHitRate, focusId, onFocused,
 }) {
   const [q, setQ] = useState('')
@@ -154,6 +155,7 @@ export default function SubmissionsPanel({
           onPatchCard={onPatchCard}
           onRefreshCards={onRefreshCards}
           refreshing={refreshing}
+          onDeleteCards={onDeleteCards}
           onUseRate={onUseRate}
           averageHitRate={averageHitRate}
           qtyOf={qtyOf}
@@ -214,7 +216,7 @@ function csvRow(card, a) {
 
 function Submission({
   sub, cards, allCards, tiers, settings, onPatch, onDelete, onRemoveCards, onPatchCard,
-  onRefreshCards, refreshing,
+  onRefreshCards, refreshing, onDeleteCards,
   onAddCard, qtyOf, adding, onUsage, onError, onUseRate, averageHitRate,
   focused, onFocused,
 }) {
@@ -226,6 +228,8 @@ function Submission({
   // One priced card open at a time, matching the backlog. Entering costs is a
   // one-card-at-a-time job, and several open rows push the table off the page.
   const [openCard, setOpenCard] = useState(null)
+  // The card the cross was pressed on, held while the removal is confirmed.
+  const [removing, setRemoving] = useState(null)
   const ref = useRef(null)
 
   // Arriving from a backlog row: scroll this one into view and flash it, so
@@ -749,8 +753,8 @@ function Submission({
                     <td>
                       <button
                         className="ghost"
-                        title="Send back to the backlog"
-                        onClick={() => onRemoveCards([card.id])}
+                        title="Remove from this submission"
+                        onClick={() => setRemoving(card)}
                       >
                         ✕
                       </button>
@@ -826,6 +830,19 @@ function Submission({
               Delete
             </button>
           </div>
+
+          <RemoveCardDialog
+            card={removing}
+            onCancel={() => setRemoving(null)}
+            onBacklog={() => {
+              onRemoveCards([removing.id])
+              setRemoving(null)
+            }}
+            onDelete={() => {
+              onDeleteCards([removing.id])
+              setRemoving(null)
+            }}
+          />
         </>
       )}
     </div>

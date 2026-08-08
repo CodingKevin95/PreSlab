@@ -1108,6 +1108,7 @@ export default function App() {
           onRemoveCards={removeFromSubmission}
           onPatchCard={patchCard}
           onRefreshCards={fetchCompsFor}
+          onDeleteCards={removeCards}
           refreshing={Boolean(fetchingComps)}
           onGoToBacklog={() => setTab('backlog')}
           onAddCard={addCard}
@@ -1167,6 +1168,7 @@ export default function App() {
           onRemoveCards={removeFromSubmission}
           onPatchCard={patchCard}
           onRefreshCards={fetchCompsFor}
+          onDeleteCards={removeCards}
           refreshing={Boolean(fetchingComps)}
           onGoToBacklog={() => setTab('backlog')}
           qtyOf={qtyOf}
