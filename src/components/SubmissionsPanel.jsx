@@ -279,6 +279,23 @@ function Submission({
     { raw: 0, cost: 0, graded: 0, uplift: 0, upliftNet: 0, spent: 0, assumed: 0, profit: 0, withComps: 0 }
   )
 
+  /*
+    Postage for the batch, taken off every profit figure on this page.
+
+    Deliberately not pushed down into the per-card maths. A card's profit is
+    what that card made, and the same card carries no shipping in the backlog;
+    charging it a share here would make the two disagree for a cost that was
+    never per card in the first place.
+  */
+  // Typed by hand, so "$25" and "1,250" are both likely and both parse to
+  // nothing on their own. Stripping the symbols is kinder than silently
+  // reading them as zero and leaving the profit unchanged.
+  const shipping = Math.max(
+    0,
+    Number(String(sub.shipping ?? '').replace(/[$,\s]/g, '')) || 0
+  )
+  const profitAfterShipping = totals.profit - shipping
+
   // Which tiers this batch unlocks purely by being big enough.
   const unlocked = tiers.filter((t) => units >= (Number(t.minCards) || 1))
   const blocked = tiers.filter((t) => units < (Number(t.minCards) || 1))
@@ -297,12 +314,26 @@ function Submission({
       CSV_HEADERS,
       ...analyses.map(({ card, a }) => csvRow(card, a)),
       [],
-      // A totals line, so the file stands on its own without re-deriving sums.
+      /*
+        A totals line, so the file stands on its own without re-deriving sums.
+
+        Shipping gets its own row rather than being folded into the card
+        totals. No card was charged it, and hiding it inside them would leave
+        the columns above failing to add up to the figure below.
+      */
       ['TOTAL', '', '', '', '', '', units,
         '', totals.spent.toFixed(2), '', totals.raw.toFixed(2),
         '', '', '', totals.cost.toFixed(2),
         '', '', totals.graded.toFixed(2), '',
         '', '', totals.profit.toFixed(2), ''],
+      ...(shipping > 0
+        ? [
+          ['SHIPPING', '', '', '', '', '', '', '', '', '', '',
+            '', '', '', '', '', '', '', '', '', '', (-shipping).toFixed(2), ''],
+          ['AFTER SHIPPING', '', '', '', '', '', '', '', '', '', '',
+            '', '', '', '', '', '', '', '', '', '', profitAfterShipping.toFixed(2), ''],
+        ]
+        : []),
     ]
     const safe = (sub.name || 'submission').replace(/[^\w-]+/g, '-').toLowerCase()
     downloadCsv(`${safe}-${new Date().toISOString().slice(0, 10)}.csv`, rows)
@@ -360,6 +391,22 @@ function Submission({
           placeholder="Submission #"
           onChange={(e) => onPatch({ tracking: e.target.value })}
           title="The PSA order number for this batch"
+        />
+
+        {/*
+          Charged once for the batch rather than per card, so it belongs up here
+          with the order number. Dividing it across cards would invent a
+          per-card figure nobody was billed and quietly change what each row
+          looks like it made.
+        */}
+        <input
+          className="mini"
+          style={{ width: 120 }}
+          value={sub.shipping ?? ''}
+          placeholder="Shipping $"
+          inputMode="decimal"
+          onChange={(e) => onPatch({ shipping: e.target.value })}
+          title="Postage and insurance for this batch, both ways. Comes off the profit below."
         />
 
         <select
@@ -433,9 +480,13 @@ function Submission({
             back at its target grade. The scenario tiles below temper it. */}
         <Mini
           k="Profit"
-          v={money(totals.profit, { cents: false })}
-          n="if every card hits its target grade · after fees, grading and what you paid"
-          tone={totals.profit > 0 ? 'good' : totals.profit < 0 ? 'bad' : null}
+          v={money(profitAfterShipping, { cents: false })}
+          n={
+            'if every card hits its target grade · after fees, grading' +
+            (shipping > 0 ? `, ${money(shipping)} shipping` : '') +
+            ' and what you paid'
+          }
+          tone={profitAfterShipping > 0 ? 'good' : profitAfterShipping < 0 ? 'bad' : null}
         />
         </div>
       </div>
@@ -493,33 +544,33 @@ function Submission({
           <div className="stats">
             <Mini
               k="Worst case"
-              v={money(scen.worst, { cents: false })}
+              v={money(scen.worst - shipping, { cents: false })}
               n={
                 scen.missesInWorst.length
                   ? `your best cards miss: ${scen.missesInWorst.slice(0, 2).join(', ')}`
                   : 'every card hits'
               }
-              tone={scen.worst > 0 ? 'good' : scen.worst < 0 ? 'bad' : null}
+              tone={scen.worst - shipping > 0 ? 'good' : scen.worst - shipping < 0 ? 'bad' : null}
               open={openCase === 'worst'}
               onClick={() => setOpenCase(openCase === 'worst' ? null : 'worst')}
             />
             <Mini
               k="Expected"
-              v={money(scen.expected, { cents: false })}
+              v={money(scen.expected - shipping, { cents: false })}
               n={`each card at ${Math.round(Number(rate) || 0)}%`}
-              tone={scen.expected > 0 ? 'good' : scen.expected < 0 ? 'bad' : null}
+              tone={scen.expected - shipping > 0 ? 'good' : scen.expected - shipping < 0 ? 'bad' : null}
               open={openCase === 'expected'}
               onClick={() => setOpenCase(openCase === 'expected' ? null : 'expected')}
             />
             <Mini
               k="Best case"
-              v={money(scen.best, { cents: false })}
+              v={money(scen.best - shipping, { cents: false })}
               n={
                 scen.missesInBest.length
                   ? `only your cheapest miss: ${scen.missesInBest.slice(0, 2).join(', ')}`
                   : 'every card hits'
               }
-              tone={scen.best > 0 ? 'good' : scen.best < 0 ? 'bad' : null}
+              tone={scen.best - shipping > 0 ? 'good' : scen.best - shipping < 0 ? 'bad' : null}
               open={openCase === 'best'}
               onClick={() => setOpenCase(openCase === 'best' ? null : 'best')}
             />
